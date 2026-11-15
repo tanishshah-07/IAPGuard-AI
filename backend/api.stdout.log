@@ -1,0 +1,31 @@
+INFO:     127.0.0.1:62739 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62741 - "GET /api/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51057 - "GET /api/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51058 - "GET /api/model HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51059 - "GET /api/evaluation HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56038 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56038 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50141 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50141 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55571 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56147 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56147 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56147 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56147 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64745 - "GET /api/model HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64746 - "GET /api/evaluation HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56825 - "GET /api/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50061 - "GET /api/transactions?page=1&limit=15&risk=all&search= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53566 - "GET /api/transactions?risk=high&limit=20&page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56215 - "GET /api/transactions?page=1&limit=15&risk=all&search= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61740 - "GET /api/model HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61741 - "GET /api/evaluation HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61739 - "GET /api/overview HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55384 - "GET /api/transactions?page=1&limit=15&risk=all&search= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59948 - "GET /api/transactions?risk=high&limit=20&page=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64317 - "POST /api/analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53332 - "POST /api/analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49748 - "POST /api/analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54405 - "GET /api/model HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54406 - "GET /api/evaluation HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54404 - "GET /api/overview HTTP/1.1" 200 OK

@@ -1,0 +1,837 @@
+{
+  "version": "1.0.0",
+  "gitCommitHash": "",
+  "generatedAt": "2026-11-14T15:22:52.542Z",
+  "files": {
+    ".env.example": {
+      "filePath": ".env.example",
+      "contentHash": "a1c8c33b7fc028b294a0ca947cea568995f5334030a92178c98df781f4211139",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 5,
+      "hasStructuralAnalysis": false
+    },
+    "CODEX.md": {
+      "filePath": "CODEX.md",
+      "contentHash": "79f007535d65f2fc0d82229237806a3a7b9e6315ad3188efd38c5ca2c63bd5b1",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 18,
+      "hasStructuralAnalysis": false
+    },
+    "README.md": {
+      "filePath": "README.md",
+      "contentHash": "467deea194152241f5043372fe541c7aa67f7cd81796601c4d9353b1f4131173",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 141,
+      "hasStructuralAnalysis": false
+    },
+    "backend/app/__init__.py": {
+      "filePath": "backend/app/__init__.py",
+      "contentHash": "abbbf1755774d2b993e34ac218b8a96cd703afb105701d5c59329ce6e102f33f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 2,
+      "hasStructuralAnalysis": true
+    },
+    "backend/app/db.py": {
+      "filePath": "backend/app/db.py",
+      "contentHash": "ab679676c7606ca833d933009a8f770fe4d6332ce3b3c33be49e61f9f34092ec",
+      "functions": [
+        {
+          "name": "connect",
+          "params": [],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "initialize",
+          "params": [],
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "insert_many",
+          "params": [
+            "records"
+          ],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "row_to_dict",
+          "params": [
+            "row"
+          ],
+          "exported": true,
+          "lineCount": 2
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "sqlite3",
+          "specifiers": [
+            "sqlite3"
+          ]
+        },
+        {
+          "source": "contextlib",
+          "specifiers": [
+            "contextmanager"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        }
+      ],
+      "exports": [
+        "connect",
+        "initialize",
+        "insert_many",
+        "row_to_dict"
+      ],
+      "totalLines": 57,
+      "hasStructuralAnalysis": true
+    },
+    "backend/app/main.py": {
+      "filePath": "backend/app/main.py",
+      "contentHash": "42ae5aee8323ce2a6055e82855c0be8e9dea98d47cfae02506415b77ce7f9980",
+      "functions": [
+        {
+          "name": "rescore_all",
+          "params": [],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "seed_demo",
+          "params": [
+            "reset"
+          ],
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "lifespan",
+          "params": [
+            "app"
+          ],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "health",
+          "params": [],
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "overview",
+          "params": [],
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "transactions",
+          "params": [
+            "page",
+            "limit",
+            "risk",
+            "search"
+          ],
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "transaction_detail",
+          "params": [
+            "transaction_id"
+          ],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "analyze",
+          "params": [
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "review_transaction",
+          "params": [
+            "transaction_id",
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "model_info",
+          "params": [],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "retrain",
+          "params": [],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "reset_demo",
+          "params": [],
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "evaluation",
+          "params": [],
+          "exported": true,
+          "lineCount": 16
+        }
+      ],
+      "classes": [
+        {
+          "name": "TransactionInput",
+          "methods": [],
+          "properties": [
+            "user_id",
+            "amount",
+            "hour",
+            "account_age_days",
+            "purchases_24h",
+            "failed_attempts_24h",
+            "payment_methods_7d",
+            "device_changes_7d",
+            "country_mismatch",
+            "purchase_type"
+          ],
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "ReviewInput",
+          "methods": [],
+          "properties": [
+            "resolution",
+            "note"
+          ],
+          "exported": true,
+          "lineCount": 3
+        }
+      ],
+      "imports": [
+        {
+          "source": "contextlib",
+          "specifiers": [
+            "asynccontextmanager"
+          ]
+        },
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timezone"
+          ]
+        },
+        {
+          "source": "threading",
+          "specifiers": [
+            "Lock"
+          ]
+        },
+        {
+          "source": "sqlite3",
+          "specifiers": [
+            "sqlite3"
+          ]
+        },
+        {
+          "source": "typing",
+          "specifiers": [
+            "Literal"
+          ]
+        },
+        {
+          "source": "fastapi",
+          "specifiers": [
+            "FastAPI",
+            "HTTPException",
+            "Query"
+          ]
+        },
+        {
+          "source": "fastapi.middleware.cors",
+          "specifiers": [
+            "CORSMiddleware"
+          ]
+        },
+        {
+          "source": "pydantic",
+          "specifiers": [
+            "BaseModel",
+            "Field"
+          ]
+        },
+        {
+          "source": ".db",
+          "specifiers": [
+            "connect",
+            "initialize",
+            "insert_many",
+            "row_to_dict"
+          ]
+        },
+        {
+          "source": ".model",
+          "specifiers": [
+            "Detector"
+          ]
+        },
+        {
+          "source": ".synthetic",
+          "specifiers": [
+            "generate"
+          ]
+        }
+      ],
+      "exports": [
+        "TransactionInput",
+        "ReviewInput",
+        "rescore_all",
+        "seed_demo",
+        "lifespan",
+        "health",
+        "overview",
+        "transactions",
+        "transaction_detail",
+        "analyze",
+        "review_transaction",
+        "model_info",
+        "retrain",
+        "reset_demo",
+        "evaluation"
+      ],
+      "totalLines": 180,
+      "hasStructuralAnalysis": true
+    },
+    "backend/app/model.py": {
+      "filePath": "backend/app/model.py",
+      "contentHash": "68611415af0bef519b34db556d69163bb17ff43be983357fc58e86be733ecec2",
+      "functions": [
+        {
+          "name": "features",
+          "params": [
+            "tx"
+          ],
+          "exported": true,
+          "lineCount": 9
+        }
+      ],
+      "classes": [
+        {
+          "name": "VAE",
+          "methods": [
+            "__init__",
+            "forward"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "Detector",
+          "methods": [
+            "__init__",
+            "ready",
+            "train",
+            "raw_scores",
+            "score",
+            "save",
+            "load"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 85
+        }
+      ],
+      "imports": [
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "numpy",
+          "specifiers": [
+            "np"
+          ]
+        },
+        {
+          "source": "torch",
+          "specifiers": [
+            "torch"
+          ]
+        },
+        {
+          "source": "torch",
+          "specifiers": [
+            "nn"
+          ]
+        },
+        {
+          "source": "sklearn.preprocessing",
+          "specifiers": [
+            "StandardScaler"
+          ]
+        },
+        {
+          "source": ".db",
+          "specifiers": [
+            "DATA_DIR"
+          ]
+        }
+      ],
+      "exports": [
+        "features",
+        "VAE",
+        "Detector"
+      ],
+      "totalLines": 129,
+      "hasStructuralAnalysis": true
+    },
+    "backend/app/synthetic.py": {
+      "filePath": "backend/app/synthetic.py",
+      "contentHash": "7f355b1c3404f859e1a079f5cca7807c96c8c9b2a616b8c2cfa051763aa42abf",
+      "functions": [
+        {
+          "name": "generate",
+          "params": [
+            "count",
+            "fraud_rate",
+            "seed"
+          ],
+          "exported": true,
+          "lineCount": 33
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime",
+            "timedelta",
+            "timezone"
+          ]
+        },
+        {
+          "source": "numpy",
+          "specifiers": [
+            "np"
+          ]
+        }
+      ],
+      "exports": [
+        "generate"
+      ],
+      "totalLines": 40,
+      "hasStructuralAnalysis": true
+    },
+    "backend/pytest.ini": {
+      "filePath": "backend/pytest.ini",
+      "contentHash": "b160d82f7811555051f8966d8e02750a985227c1d022208c784e606946f2eada",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 4,
+      "hasStructuralAnalysis": false
+    },
+    "backend/requirements.txt": {
+      "filePath": "backend/requirements.txt",
+      "contentHash": "71ea909b2ca023fe3e8c90e01868cd737685d299399242813ef654a2a1708132",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 9,
+      "hasStructuralAnalysis": false
+    },
+    "backend/tests/test_api.py": {
+      "filePath": "backend/tests/test_api.py",
+      "contentHash": "2b7af238b7769ca3d41a0f13474d817fe5b790af0145b33fb7d88c42bdd8297b",
+      "functions": [
+        {
+          "name": "test_end_to_end",
+          "params": [],
+          "exported": true,
+          "lineCount": 22
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "tempfile",
+          "specifiers": [
+            "tempfile"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "fastapi.testclient",
+          "specifiers": [
+            "TestClient"
+          ]
+        },
+        {
+          "source": "app.main",
+          "specifiers": [
+            "app"
+          ]
+        }
+      ],
+      "exports": [
+        "test_end_to_end"
+      ],
+      "totalLines": 31,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/index.html": {
+      "filePath": "frontend/index.html",
+      "contentHash": "f120bb8eb53cab20dc1f0784e75fac8d4d63c70d02cb4af71a018ae223c11327",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 2,
+      "hasStructuralAnalysis": false
+    },
+    "frontend/package.json": {
+      "filePath": "frontend/package.json",
+      "contentHash": "c654f21029f0d10d609b4dd4ff7f896969e766121f37175972a2bbf0714275bc",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 7,
+      "hasStructuralAnalysis": false
+    },
+    "frontend/src/api.js": {
+      "filePath": "frontend/src/api.js",
+      "contentHash": "b945906db46f268723a8c0501ddfa77b02bfeb82275b0017de8dede8d8a6ae4b",
+      "functions": [
+        {
+          "name": "api",
+          "params": [
+            "path"
+          ],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "money",
+          "params": [
+            "n"
+          ],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "number",
+          "params": [
+            "n"
+          ],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "date",
+          "params": [
+            "value"
+          ],
+          "exported": true,
+          "lineCount": 1
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "api",
+        "money",
+        "number",
+        "date"
+      ],
+      "totalLines": 13,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/main.jsx": {
+      "filePath": "frontend/src/main.jsx",
+      "contentHash": "e0b524c65538369e8d5251f7815f8610fce66ca0144aa0b6f5ad3187540f9173",
+      "functions": [
+        {
+          "name": "riskBadge",
+          "params": [
+            "risk"
+          ],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "App",
+          "params": [],
+          "exported": false,
+          "lineCount": 32
+        },
+        {
+          "name": "PageHead",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "Metric",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "TransactionsTable",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "Overview",
+          "params": [],
+          "exported": false,
+          "lineCount": 11
+        },
+        {
+          "name": "Transactions",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "Alerts",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "Lab",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "ModelPage",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "Detail",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useCallback",
+            "useEffect",
+            "useState"
+          ]
+        },
+        {
+          "source": "react-dom/client",
+          "specifiers": [
+            "createRoot"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Activity",
+            "AlertTriangle",
+            "ArrowDownRight",
+            "ArrowRight",
+            "ArrowUpRight",
+            "Bell",
+            "BrainCircuit",
+            "CheckCircle2",
+            "ChevronLeft",
+            "ChevronRight",
+            "CircleHelp",
+            "ClipboardCheck",
+            "CreditCard",
+            "Database",
+            "Download",
+            "Filter",
+            "LayoutDashboard",
+            "LoaderCircle",
+            "Menu",
+            "RefreshCw",
+            "Search",
+            "Shield",
+            "ShieldAlert",
+            "ShieldCheck",
+            "SlidersHorizontal",
+            "Sparkles",
+            "TrendingUp",
+            "X",
+            "Zap"
+          ]
+        },
+        {
+          "source": "recharts",
+          "specifiers": [
+            "Area",
+            "AreaChart",
+            "CartesianGrid",
+            "ResponsiveContainer",
+            "Tooltip",
+            "XAxis",
+            "YAxis",
+            "Bar",
+            "BarChart"
+          ]
+        },
+        {
+          "source": "./api",
+          "specifiers": [
+            "api",
+            "date",
+            "money",
+            "number"
+          ]
+        },
+        {
+          "source": "./style.css",
+          "specifiers": []
+        }
+      ],
+      "exports": [],
+      "totalLines": 66,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/style.css": {
+      "filePath": "frontend/src/style.css",
+      "contentHash": "b3b1a65f84997151a32e85e0436f88a22b197a979b50a3a695b5eef8e5c058fb",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 4,
+      "hasStructuralAnalysis": false
+    },
+    "frontend/vite.config.js": {
+      "filePath": "frontend/vite.config.js",
+      "contentHash": "bb30b454ce40366c36ddb341d6941210a90767d78f259fe1ff12f5f23c59412e",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "vite",
+          "specifiers": [
+            "defineConfig"
+          ]
+        },
+        {
+          "source": "@vitejs/plugin-react",
+          "specifiers": [
+            "react"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 4,
+      "hasStructuralAnalysis": true
+    },
+    "start-backend.bat": {
+      "filePath": "start-backend.bat",
+      "contentHash": "ade12b70f5a3eee4ae9787193eeea1ba5bc6e643a634fa07597ea885cb699ba0",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 8,
+      "hasStructuralAnalysis": false
+    },
+    "start-backend.sh": {
+      "filePath": "start-backend.sh",
+      "contentHash": "19ce3d3b25f579782f7a84418b8492668b74b51cb9b351814c3fa050552902e1",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 8,
+      "hasStructuralAnalysis": false
+    },
+    "start-frontend.bat": {
+      "filePath": "start-frontend.bat",
+      "contentHash": "dd8a36fc4b162eee7aa7c4b2652864cddc30b38a37d16e89d07894572e3a6d6a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 6,
+      "hasStructuralAnalysis": false
+    },
+    "start-frontend.sh": {
+      "filePath": "start-frontend.sh",
+      "contentHash": "2bd39700ce0644b5caa8ede1cf44243ee4f527a6bba83056af73fdfc5a8030f6",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 6,
+      "hasStructuralAnalysis": false
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+    "projectRoot":  "D:\\important\\IAPGuard_AI_Download_2026_11_12\\iapguard-ai",
+    "filePaths":  [
+                      ".env.example",
+                      "CODEX.md",
+                      "README.md",
+                      "backend/app/__init__.py",
+                      "backend/app/db.py",
+                      "backend/app/main.py",
+                      "backend/app/model.py",
+                      "backend/app/synthetic.py",
+                      "backend/pytest.ini",
+                      "backend/requirements.txt",
+                      "backend/tests/test_api.py",
+                      "frontend/index.html",
+                      "frontend/package.json",
+                      "frontend/src/api.js",
+                      "frontend/src/main.jsx",
+                      "frontend/src/style.css",
+                      "frontend/vite.config.js",
+                      "start-backend.bat",
+                      "start-backend.sh",
+                      "start-frontend.bat",
+                      "start-frontend.sh"
+                  ],
+    "gitCommitHash":  ""
+}

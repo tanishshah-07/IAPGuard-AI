@@ -1,0 +1,85 @@
+{
+  "batchIndex": 1,
+  "batchFiles": [
+    ".env.example",
+    "CODEX.md",
+    "README.md",
+    "start-backend.bat",
+    "start-backend.sh",
+    "start-frontend.bat",
+    "start-frontend.sh"
+  ],
+  "nodes": [
+    {
+      "id": "config:.env.example",
+      "type": "config",
+      "name": ".env.example",
+      "filePath": ".env.example",
+      "summary": "Optional environment configuration template for overriding the backend data directory and frontend API base URL.",
+      "tags": ["environment", "configuration", "api", "data-directory"],
+      "complexity": 1,
+      "languageNotes": "Configuration template with commented shell-style environment variable assignments."
+    },
+    {
+      "id": "document:CODEX.md",
+      "type": "document",
+      "name": "CODEX.md",
+      "filePath": "CODEX.md",
+      "summary": "Contributor guidance for running, testing, and extending the educational fraud anomaly-detection prototype while keeping data synthetic and avoiding production fraud claims.",
+      "tags": ["documentation", "development-guide", "testing", "synthetic-data", "safety"],
+      "complexity": 2,
+      "languageNotes": "Markdown instructions and repository-specific development notes."
+    },
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "summary": "Comprehensive project documentation covering the IAPGuard AI prototype, its React and FastAPI stack, VAE anomaly-detection pipeline, local setup, API endpoints, scoring behavior, and production limitations.",
+      "tags": ["documentation", "architecture", "setup", "api", "machine-learning", "limitations"],
+      "complexity": 3,
+      "languageNotes": "Markdown user and developer documentation with tables, diagrams, shell commands, and JSON examples."
+    },
+    {
+      "id": "file:start-backend.bat",
+      "type": "file",
+      "name": "start-backend.bat",
+      "filePath": "start-backend.bat",
+      "summary": "Windows command script that enters the backend directory, creates or activates a Python virtual environment, installs backend requirements, and starts the FastAPI server with reload enabled.",
+      "tags": ["script", "windows", "backend", "python", "fastapi", "startup"],
+      "complexity": 2,
+      "languageNotes": "Windows batch script invoking Python, pip, and uvicorn."
+    },
+    {
+      "id": "file:start-backend.sh",
+      "type": "file",
+      "name": "start-backend.sh",
+      "filePath": "start-backend.sh",
+      "summary": "Unix shell script that enters the backend directory, creates or activates a Python virtual environment, installs backend requirements, and starts the FastAPI server with reload enabled.",
+      "tags": ["script", "shell", "backend", "python", "fastapi", "startup"],
+      "complexity": 2,
+      "languageNotes": "POSIX-style shell script invoking Python, pip, and uvicorn."
+    },
+    {
+      "id": "file:start-frontend.bat",
+      "type": "file",
+      "name": "start-frontend.bat",
+      "filePath": "start-frontend.bat",
+      "summary": "Windows command script that enters the frontend directory, installs npm dependencies when needed, and launches the Vite development server.",
+      "tags": ["script", "windows", "frontend", "npm", "vite", "startup"],
+      "complexity": 2,
+      "languageNotes": "Windows batch script invoking npm install and npm run dev."
+    },
+    {
+      "id": "file:start-frontend.sh",
+      "type": "file",
+      "name": "start-frontend.sh",
+      "filePath": "start-frontend.sh",
+      "summary": "Unix shell script that enters the frontend directory, installs npm dependencies when needed, and launches the Vite development server.",
+      "tags": ["script", "shell", "frontend", "npm", "vite", "startup"],
+      "complexity": 2,
+      "languageNotes": "POSIX-style shell script invoking npm install and npm run dev."
+    }
+  ],
+  "edges": []
+}

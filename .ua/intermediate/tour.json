@@ -1,0 +1,76 @@
+[
+  {
+    "order": 1,
+    "title": "Project Overview",
+    "description": "Begin with the README to understand IAPGuard AI as an educational, synthetic-data prototype: a React dashboard over a FastAPI service that uses a PyTorch variational autoencoder to identify unusual in-app purchase behavior. Review the documented architecture, local setup, API surface, and safety limitations before exploring implementation details.",
+    "nodeIds": [
+      "document:README.md",
+      "document:CODEX.md"
+    ]
+  },
+  {
+    "order": 2,
+    "title": "Backend API and Application Lifecycle",
+    "description": "Follow the FastAPI application in main.py from lifespan startup through database initialization, model loading or training, synthetic seeding, and rescoring. Then trace the health, overview, transaction, review, analysis, model, retraining, reset, and evaluation endpoints, including the Pydantic request validation and demo-only behavior.",
+    "nodeIds": [
+      "file:backend/app/__init__.py",
+      "file:backend/app/main.py"
+    ]
+  },
+  {
+    "order": 3,
+    "title": "Persistence and Synthetic Data",
+    "description": "Study db.py to see how the SQLite data directory is configured, connections commit or roll back, tables and indexes are created, and transactions and reviews are stored. Compare that schema with synthetic.py, which produces reproducible normal records and injected anomaly patterns for the seeded demo and evaluation metrics.",
+    "nodeIds": [
+      "file:backend/app/db.py",
+      "file:backend/app/synthetic.py",
+      "config:.env.example"
+    ]
+  },
+  {
+    "order": 4,
+    "title": "VAE Anomaly Detection",
+    "description": "Trace model.py's eleven engineered features, scaling, encoder and decoder, latent sampling during training, deterministic inference, reconstruction-error scoring, residual ranking, percentile calibration, and local checkpoint persistence. Connect these mechanics to the API's risk levels and the dashboard's interpretation that anomaly scores are not fraud probabilities or causal explanations.",
+    "nodeIds": [
+      "file:backend/app/model.py",
+      "file:backend/app/main.py",
+      "file:backend/requirements.txt"
+    ]
+  },
+  {
+    "order": 5,
+    "title": "Frontend Dashboard and API Integration",
+    "description": "Start at the Vite HTML entry point and main.jsx to learn the single-page navigation, overview metrics and charts, transaction explorer, alert queue, detection lab, model insights, and review drawer. Then read api.js for the shared REST wrapper, error handling, formatting helpers, and configurable API base URL; finish with the Vite proxy and responsive styling.",
+    "nodeIds": [
+      "file:frontend/index.html",
+      "file:frontend/src/main.jsx",
+      "file:frontend/src/api.js",
+      "file:frontend/src/style.css",
+      "file:frontend/package.json",
+      "file:frontend/vite.config.js"
+    ]
+  },
+  {
+    "order": 6,
+    "title": "Backend Integration Tests",
+    "description": "Use the pytest configuration and test_api.py as an executable tour of the backend contract. The end-to-end test isolates its database and model directory, verifies startup and readiness, exercises overview, filtering, details, reviews, manual analysis, evaluation, and model endpoints, and confirms the not-found path.",
+    "nodeIds": [
+      "file:backend/tests/test_api.py",
+      "file:backend/pytest.ini",
+      "file:backend/requirements.txt"
+    ]
+  },
+  {
+    "order": 7,
+    "title": "Startup and Development Tooling",
+    "description": "Finish by comparing the Windows batch and Unix shell launchers. Each backend script creates or activates a virtual environment, installs requirements, and runs Uvicorn; each frontend script installs npm dependencies when needed and starts Vite. Use the README commands and environment template to understand ports, proxy behavior, and optional configuration overrides.",
+    "nodeIds": [
+      "file:start-backend.bat",
+      "file:start-backend.sh",
+      "file:start-frontend.bat",
+      "file:start-frontend.sh",
+      "config:.env.example",
+      "document:README.md"
+    ]
+  }
+]

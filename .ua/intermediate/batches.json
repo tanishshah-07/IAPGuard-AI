@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "louvain",
+  "totalFiles": 21,
+  "totalBatches": 2,
+  "exportsByPath": {
+    "backend/app/__init__.py": [],
+    "backend/app/db.py": [
+      "connect",
+      "initialize",
+      "insert_many",
+      "row_to_dict"
+    ],
+    "backend/app/main.py": [
+      "TransactionInput",
+      "ReviewInput",
+      "rescore_all",
+      "seed_demo",
+      "lifespan",
+      "health",
+      "overview",
+      "transactions",
+      "transaction_detail",
+      "analyze",
+      "review_transaction",
+      "model_info",
+      "retrain",
+      "reset_demo",
+      "evaluation"
+    ],
+    "backend/app/model.py": [
+      "features",
+      "VAE",
+      "Detector"
+    ],
+    "backend/app/synthetic.py": [
+      "generate"
+    ],
+    "backend/tests/test_api.py": [
+      "test_end_to_end"
+    ],
+    "frontend/src/api.js": [
+      "api",
+      "money",
+      "number",
+      "date"
+    ],
+    "frontend/src/main.jsx": [],
+    "frontend/vite.config.js": []
+  },
+  "batches": [
+    {
+      "batchIndex": 1,
+      "files": [
+        {
+          "path": ".env.example",
+          "language": "config",
+          "sizeLines": 4,
+          "fileCategory": "config"
+        },
+        {
+          "path": "CODEX.md",
+          "language": "markdown",
+          "sizeLines": 17,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "README.md",
+          "language": "markdown",
+          "sizeLines": 140,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "start-backend.bat",
+          "language": "batch",
+          "sizeLines": 7,
+          "fileCategory": "script"
+        },
+        {
+          "path": "start-backend.sh",
+          "language": "shell",
+          "sizeLines": 7,
+          "fileCategory": "script"
+        },
+        {
+          "path": "start-frontend.bat",
+          "language": "batch",
+          "sizeLines": 5,
+          "fileCategory": "script"
+        },
+        {
+          "path": "start-frontend.sh",
+          "language": "shell",
+          "sizeLines": 5,
+          "fileCategory": "script"
+        }
+      ],
+      "batchImportData": {
+        ".env.example": [],
+        "CODEX.md": [],
+        "README.md": [],
+        "start-backend.bat": [],
+        "start-backend.sh": [],
+        "start-frontend.bat": [],
+        "start-frontend.sh": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 2,
+      "files": [
+        {
+          "path": "backend/app/__init__.py",
+          "language": "python",
+          "sizeLines": 1,
+          "fileCategory": "code"
+        },
+        {
+          "path": "backend/app/db.py",
+          "language": "python",
+          "sizeLines": 56,
+          "fileCategory": "code"
+        },
+        {
+          "path": "backend/app/main.py",
+          "language": "python",
+          "sizeLines": 179,
+          "fileCategory": "code"
+        },
+        {
+          "path": "backend/app/model.py",
+          "language": "python",
+          "sizeLines": 128,
+          "fileCategory": "code"
+        },
+        {
+          "path": "backend/app/synthetic.py",
+          "language": "python",
+          "sizeLines": 39,
+          "fileCategory": "code"
+        },
+        {
+          "path": "backend/pytest.ini",
+          "language": "config",
+          "sizeLines": 3,
+          "fileCategory": "config"
+        },
+        {
+          "path": "backend/requirements.txt",
+          "language": "txt",
+          "sizeLines": 8,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "backend/tests/test_api.py",
+          "language": "python",
+          "sizeLines": 30,
+          "fileCategory": "code"
+        },
+        {
+          "path": "frontend/index.html",
+          "language": "html",
+          "sizeLines": 1,
+          "fileCategory": "markup"
+        },
+        {
+          "path": "frontend/package.json",
+          "language": "json",
+          "sizeLines": 6,
+          "fileCategory": "config"
+        },
+        {
+          "path": "frontend/src/api.js",
+          "language": "javascript",
+          "sizeLines": 12,
+          "fileCategory": "code"
+        },
+        {
+          "path": "frontend/src/main.jsx",
+          "language": "javascript",
+          "sizeLines": 65,
+          "fileCategory": "code"
+        },
+        {
+          "path": "frontend/src/style.css",
+          "language": "css",
+          "sizeLines": 3,
+          "fileCategory": "markup"
+        },
+        {
+          "path": "frontend/vite.config.js",
+          "language": "javascript",
+          "sizeLines": 3,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "backend/app/__init__.py": [],
+        "backend/app/db.py": [],
+        "backend/app/main.py": [],
+        "backend/app/model.py": [],
+        "backend/app/synthetic.py": [],
+        "backend/pytest.ini": [],
+        "backend/requirements.txt": [],
+        "backend/tests/test_api.py": [],
+        "frontend/index.html": [],
+        "frontend/package.json": [],
+        "frontend/src/api.js": [],
+        "frontend/src/main.jsx": [],
+        "frontend/src/style.css": [],
+        "frontend/vite.config.js": []
+      },
+      "neighborMap": {}
+    }
+  ]
+}

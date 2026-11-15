@@ -1,0 +1,1145 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "IAPGuard AI",
+    "description": "Educational full-stack prototype for detecting unusual synthetic in-app purchase behavior with a PyTorch variational autoencoder and presenting investigations in a React dashboard.",
+    "languages": [
+      "Python",
+      "JavaScript",
+      "HTML",
+      "CSS",
+      "Shell",
+      "Batch",
+      "Markdown",
+      "JSON"
+    ],
+    "frameworks": [
+      "FastAPI",
+      "React",
+      "Vite",
+      "PyTorch",
+      "SQLite"
+    ],
+    "analyzedAt": "2026-11-14T15:22:24.208Z",
+    "gitCommitHash": ""
+  },
+  "nodes": [
+    {
+      "id": "config:.env.example",
+      "type": "config",
+      "name": ".env.example",
+      "filePath": ".env.example",
+      "summary": "Optional environment configuration template for overriding the backend data directory and frontend API base URL.",
+      "tags": [
+        "environment",
+        "configuration",
+        "api",
+        "data-directory"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Configuration template with commented shell-style environment variable assignments."
+    },
+    {
+      "id": "document:CODEX.md",
+      "type": "document",
+      "name": "CODEX.md",
+      "filePath": "CODEX.md",
+      "summary": "Contributor guidance for running, testing, and extending the educational fraud anomaly-detection prototype while keeping data synthetic and avoiding production fraud claims.",
+      "tags": [
+        "documentation",
+        "development-guide",
+        "testing",
+        "synthetic-data",
+        "safety"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Markdown instructions and repository-specific development notes."
+    },
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "summary": "Comprehensive project documentation covering the IAPGuard AI prototype, its React and FastAPI stack, VAE anomaly-detection pipeline, local setup, API endpoints, scoring behavior, and production limitations.",
+      "tags": [
+        "documentation",
+        "architecture",
+        "setup",
+        "api",
+        "machine-learning",
+        "limitations"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Markdown user and developer documentation with tables, diagrams, shell commands, and JSON examples."
+    },
+    {
+      "id": "file:start-backend.bat",
+      "type": "file",
+      "name": "start-backend.bat",
+      "filePath": "start-backend.bat",
+      "summary": "Windows command script that enters the backend directory, creates or activates a Python virtual environment, installs backend requirements, and starts the FastAPI server with reload enabled.",
+      "tags": [
+        "script",
+        "windows",
+        "backend",
+        "python",
+        "fastapi",
+        "startup"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Windows batch script invoking Python, pip, and uvicorn."
+    },
+    {
+      "id": "file:start-backend.sh",
+      "type": "file",
+      "name": "start-backend.sh",
+      "filePath": "start-backend.sh",
+      "summary": "Unix shell script that enters the backend directory, creates or activates a Python virtual environment, installs backend requirements, and starts the FastAPI server with reload enabled.",
+      "tags": [
+        "script",
+        "shell",
+        "backend",
+        "python",
+        "fastapi",
+        "startup"
+      ],
+      "complexity": "simple",
+      "languageNotes": "POSIX-style shell script invoking Python, pip, and uvicorn."
+    },
+    {
+      "id": "file:start-frontend.bat",
+      "type": "file",
+      "name": "start-frontend.bat",
+      "filePath": "start-frontend.bat",
+      "summary": "Windows command script that enters the frontend directory, installs npm dependencies when needed, and launches the Vite development server.",
+      "tags": [
+        "script",
+        "windows",
+        "frontend",
+        "npm",
+        "vite",
+        "startup"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Windows batch script invoking npm install and npm run dev."
+    },
+    {
+      "id": "file:start-frontend.sh",
+      "type": "file",
+      "name": "start-frontend.sh",
+      "filePath": "start-frontend.sh",
+      "summary": "Unix shell script that enters the frontend directory, installs npm dependencies when needed, and launches the Vite development server.",
+      "tags": [
+        "script",
+        "shell",
+        "frontend",
+        "npm",
+        "vite",
+        "startup"
+      ],
+      "complexity": "simple",
+      "languageNotes": "POSIX-style shell script invoking npm install and npm run dev."
+    },
+    {
+      "id": "file:backend/app/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "summary": "Package marker for the IAPGuard backend application.",
+      "tags": [
+        "backend",
+        "python",
+        "package"
+      ],
+      "complexity": "moderate",
+      "filePath": "backend/app/__init__.py",
+      "relationships": []
+    },
+    {
+      "id": "file:backend/app/db.py",
+      "type": "file",
+      "name": "db.py",
+      "summary": "Provides SQLite connection management, schema initialization, bulk transaction insertion, and row conversion helpers.",
+      "tags": [
+        "backend",
+        "python",
+        "sqlite",
+        "persistence"
+      ],
+      "complexity": "moderate",
+      "filePath": "backend/app/db.py",
+      "relationships": [
+        "backend/app/main.py",
+        "backend/app/model.py"
+      ]
+    },
+    {
+      "id": "file:backend/app/main.py",
+      "type": "file",
+      "name": "main.py",
+      "summary": "Defines the FastAPI application lifecycle, synthetic-data seeding, model operations, transaction APIs, review workflow, and evaluation endpoint.",
+      "tags": [
+        "backend",
+        "python",
+        "fastapi",
+        "api",
+        "fraud-detection"
+      ],
+      "complexity": "complex",
+      "filePath": "backend/app/main.py",
+      "relationships": [
+        "backend/app/db.py",
+        "backend/app/model.py",
+        "backend/app/synthetic.py",
+        "backend/tests/test_api.py"
+      ]
+    },
+    {
+      "id": "file:backend/app/model.py",
+      "type": "file",
+      "name": "model.py",
+      "summary": "Implements feature extraction, a PyTorch variational autoencoder, calibration thresholds, scoring, residual explanations, and local model persistence.",
+      "tags": [
+        "backend",
+        "python",
+        "pytorch",
+        "vae",
+        "machine-learning"
+      ],
+      "complexity": "complex",
+      "filePath": "backend/app/model.py",
+      "relationships": [
+        "backend/app/db.py",
+        "backend/app/main.py"
+      ]
+    },
+    {
+      "id": "file:backend/app/synthetic.py",
+      "type": "file",
+      "name": "synthetic.py",
+      "summary": "Generates reproducible synthetic fitness-app purchase records with normal behavior and injected anomaly patterns.",
+      "tags": [
+        "backend",
+        "python",
+        "synthetic-data",
+        "fraud-detection"
+      ],
+      "complexity": "moderate",
+      "filePath": "backend/app/synthetic.py",
+      "relationships": [
+        "backend/app/main.py"
+      ]
+    },
+    {
+      "id": "file:backend/pytest.ini",
+      "type": "file",
+      "name": "pytest.ini",
+      "summary": "Configures pytest to use the backend directory as the import root and tests directory.",
+      "tags": [
+        "backend",
+        "pytest",
+        "configuration"
+      ],
+      "complexity": "moderate",
+      "filePath": "backend/pytest.ini",
+      "relationships": [
+        "backend/tests/test_api.py"
+      ]
+    },
+    {
+      "id": "file:backend/requirements.txt",
+      "type": "file",
+      "name": "requirements.txt",
+      "summary": "Pins the backend runtime, web framework, numerical, machine-learning, and test dependencies to compatible major-version ranges.",
+      "tags": [
+        "backend",
+        "dependencies",
+        "python",
+        "configuration"
+      ],
+      "complexity": "moderate",
+      "filePath": "backend/requirements.txt",
+      "relationships": [
+        "backend/app/main.py",
+        "backend/app/model.py",
+        "backend/tests/test_api.py"
+      ]
+    },
+    {
+      "id": "file:backend/tests/test_api.py",
+      "type": "file",
+      "name": "test_api.py",
+      "summary": "Runs an end-to-end FastAPI TestClient scenario covering startup, dashboard data, filtering, detail inspection, reviews, analysis, evaluation, model state, and not-found handling.",
+      "tags": [
+        "backend",
+        "python",
+        "tests",
+        "integration"
+      ],
+      "complexity": "moderate",
+      "filePath": "backend/tests/test_api.py",
+      "relationships": [
+        "backend/app/main.py",
+        "backend/pytest.ini"
+      ]
+    },
+    {
+      "id": "file:frontend/index.html",
+      "type": "file",
+      "name": "index.html",
+      "summary": "Minimal Vite HTML entry point that mounts the React dashboard root and loads the JSX module.",
+      "tags": [
+        "frontend",
+        "html",
+        "entrypoint"
+      ],
+      "complexity": "moderate",
+      "filePath": "frontend/index.html",
+      "relationships": [
+        "frontend/src/main.jsx"
+      ]
+    },
+    {
+      "id": "file:frontend/package.json",
+      "type": "file",
+      "name": "package.json",
+      "summary": "Declares the React dashboard scripts and dependencies, including Vite, Lucide icons, and Recharts.",
+      "tags": [
+        "frontend",
+        "javascript",
+        "npm",
+        "configuration"
+      ],
+      "complexity": "moderate",
+      "filePath": "frontend/package.json",
+      "relationships": [
+        "frontend/src/main.jsx",
+        "frontend/vite.config.js"
+      ]
+    },
+    {
+      "id": "file:frontend/src/api.js",
+      "type": "file",
+      "name": "api.js",
+      "summary": "Provides the frontend HTTP client wrapper for backend API requests plus currency, number, and date formatters.",
+      "tags": [
+        "frontend",
+        "javascript",
+        "api-client",
+        "formatting"
+      ],
+      "complexity": "simple",
+      "filePath": "frontend/src/api.js",
+      "relationships": [
+        "frontend/src/main.jsx",
+        "backend/app/main.py"
+      ]
+    },
+    {
+      "id": "file:frontend/src/main.jsx",
+      "type": "file",
+      "name": "main.jsx",
+      "summary": "Implements the React single-page fraud intelligence dashboard, navigation, overview charts, transaction explorer, alert queue, detection lab, model page, and review drawer.",
+      "tags": [
+        "frontend",
+        "react",
+        "javascript",
+        "dashboard",
+        "fraud-detection"
+      ],
+      "complexity": "complex",
+      "filePath": "frontend/src/main.jsx",
+      "relationships": [
+        "frontend/index.html",
+        "frontend/src/api.js",
+        "frontend/src/style.css",
+        "backend/app/main.py"
+      ]
+    },
+    {
+      "id": "file:frontend/src/style.css",
+      "type": "file",
+      "name": "style.css",
+      "summary": "Defines the dark responsive dashboard visual system, cards, tables, forms, charts, modal drawer, status badges, and mobile layouts.",
+      "tags": [
+        "frontend",
+        "css",
+        "responsive-ui",
+        "design-system"
+      ],
+      "complexity": "moderate",
+      "filePath": "frontend/src/style.css",
+      "relationships": [
+        "frontend/src/main.jsx"
+      ]
+    },
+    {
+      "id": "file:frontend/vite.config.js",
+      "type": "file",
+      "name": "vite.config.js",
+      "summary": "Configures Vite with the React plugin, development host and port, and a proxy from frontend API calls to the FastAPI server.",
+      "tags": [
+        "frontend",
+        "javascript",
+        "vite",
+        "configuration",
+        "proxy"
+      ],
+      "complexity": "simple",
+      "filePath": "frontend/vite.config.js",
+      "relationships": [
+        "frontend/package.json",
+        "backend/app/main.py"
+      ]
+    },
+    {
+      "id": "file:backend/app/db.py::connect",
+      "type": "function",
+      "name": "connect",
+      "summary": "Context manager that opens SQLite, commits successful work, rolls back failures, and closes the connection.",
+      "tags": [
+        "function",
+        "sqlite",
+        "transaction"
+      ],
+      "complexity": "moderate",
+      "filePath": "backend/app/db.py",
+      "relationships": [
+        "backend/app/db.py"
+      ]
+    },
+    {
+      "id": "file:backend/app/db.py::initialize",
+      "type": "function",
+      "name": "initialize",
+      "summary": "Creates the transactions and reviews tables and their query indexes when the service starts.",
+      "tags": [
+        "function",
+        "schema",
+        "sqlite"
+      ],
+      "complexity": "moderate",
+      "filePath": "backend/app/db.py",
+      "relationships": [
+        "backend/app/db.py"
+      ]
+    },
+    {
+      "id": "file:backend/app/db.py::insert_many",
+      "type": "function",
+      "name": "insert_many",
+      "summary": "Bulk-inserts transaction dictionaries using the fixed transaction column set and parameterized SQL.",
+      "tags": [
+        "function",
+        "sqlite",
+        "bulk-write"
+      ],
+      "complexity": "simple",
+      "filePath": "backend/app/db.py",
+      "relationships": [
+        "backend/app/db.py"
+      ]
+    },
+    {
+      "id": "file:backend/app/model.py::features",
+      "type": "function",
+      "name": "features",
+      "summary": "Transforms a transaction into the eleven normalized model input features, including logarithmic, cyclical, and categorical values.",
+      "tags": [
+        "function",
+        "feature-engineering",
+        "machine-learning"
+      ],
+      "complexity": "moderate",
+      "filePath": "backend/app/model.py",
+      "relationships": [
+        "backend/app/model.py"
+      ]
+    },
+    {
+      "id": "file:backend/app/model.py::VAE",
+      "type": "class",
+      "name": "VAE",
+      "summary": "PyTorch variational autoencoder with encoder, latent mean and variance, stochastic training path, and decoder.",
+      "tags": [
+        "class",
+        "pytorch",
+        "vae",
+        "neural-network"
+      ],
+      "complexity": "complex",
+      "filePath": "backend/app/model.py",
+      "relationships": [
+        "backend/app/model.py"
+      ]
+    },
+    {
+      "id": "file:backend/app/model.py::Detector",
+      "type": "class",
+      "name": "Detector",
+      "summary": "Owns VAE training, held-out percentile calibration, anomaly scoring, top residual ranking, and trusted local checkpoint loading/saving.",
+      "tags": [
+        "class",
+        "machine-learning",
+        "scoring",
+        "persistence"
+      ],
+      "complexity": "complex",
+      "filePath": "backend/app/model.py",
+      "relationships": [
+        "backend/app/model.py",
+        "backend/app/db.py"
+      ]
+    },
+    {
+      "id": "file:backend/app/synthetic.py::generate",
+      "type": "function",
+      "name": "generate",
+      "summary": "Creates seeded transaction records and injects one of four illustrative fraud behavior patterns for labeled evaluation.",
+      "tags": [
+        "function",
+        "synthetic-data",
+        "fraud-patterns"
+      ],
+      "complexity": "moderate",
+      "filePath": "backend/app/synthetic.py",
+      "relationships": [
+        "backend/app/synthetic.py"
+      ]
+    },
+    {
+      "id": "file:backend/app/main.py::app",
+      "type": "function",
+      "name": "app",
+      "summary": "FastAPI application configured with lifespan initialization, CORS for local dashboard origins, and API routes.",
+      "tags": [
+        "application",
+        "fastapi",
+        "http"
+      ],
+      "complexity": "complex",
+      "filePath": "backend/app/main.py",
+      "relationships": [
+        "backend/app/main.py",
+        "frontend/src/api.js"
+      ]
+    },
+    {
+      "id": "file:backend/app/main.py::TransactionInput",
+      "type": "class",
+      "name": "TransactionInput",
+      "summary": "Pydantic request model validating transaction features submitted to the analysis endpoint.",
+      "tags": [
+        "class",
+        "pydantic",
+        "validation",
+        "api"
+      ],
+      "complexity": "moderate",
+      "filePath": "backend/app/main.py",
+      "relationships": [
+        "backend/app/main.py"
+      ]
+    },
+    {
+      "id": "file:backend/app/main.py::ReviewInput",
+      "type": "class",
+      "name": "ReviewInput",
+      "summary": "Pydantic request model restricting review decisions and note length for transaction investigations.",
+      "tags": [
+        "class",
+        "pydantic",
+        "validation",
+        "review"
+      ],
+      "complexity": "simple",
+      "filePath": "backend/app/main.py",
+      "relationships": [
+        "backend/app/main.py"
+      ]
+    },
+    {
+      "id": "file:backend/app/main.py::seed_demo",
+      "type": "function",
+      "name": "seed_demo",
+      "summary": "Trains on normal synthetic records, inserts an independently generated evaluation set, and rescored persisted transactions.",
+      "tags": [
+        "function",
+        "seeding",
+        "training",
+        "synthetic-data"
+      ],
+      "complexity": "complex",
+      "filePath": "backend/app/main.py",
+      "relationships": [
+        "backend/app/model.py",
+        "backend/app/synthetic.py",
+        "backend/app/db.py"
+      ]
+    },
+    {
+      "id": "file:backend/app/main.py::rescore_all",
+      "type": "function",
+      "name": "rescore_all",
+      "summary": "Scores every persisted transaction under the model lock and updates anomaly scores and risk levels.",
+      "tags": [
+        "function",
+        "scoring",
+        "database-update"
+      ],
+      "complexity": "moderate",
+      "filePath": "backend/app/main.py",
+      "relationships": [
+        "backend/app/model.py",
+        "backend/app/db.py"
+      ]
+    },
+    {
+      "id": "file:backend/tests/test_api.py::test_end_to_end",
+      "type": "function",
+      "name": "test_end_to_end",
+      "summary": "Exercises the principal backend API lifecycle and verifies expected response shapes and status codes.",
+      "tags": [
+        "test",
+        "integration",
+        "api"
+      ],
+      "complexity": "moderate",
+      "filePath": "backend/tests/test_api.py",
+      "relationships": [
+        "backend/app/main.py"
+      ]
+    },
+    {
+      "id": "file:frontend/src/main.jsx::App",
+      "type": "class",
+      "name": "App",
+      "summary": "Root React component managing page navigation, shared data loading, refresh actions, notifications, and transaction detail state.",
+      "tags": [
+        "component",
+        "react",
+        "state-management"
+      ],
+      "complexity": "complex",
+      "filePath": "frontend/src/main.jsx",
+      "relationships": [
+        "frontend/src/main.jsx",
+        "frontend/src/api.js"
+      ]
+    },
+    {
+      "id": "file:frontend/src/main.jsx::Overview",
+      "type": "class",
+      "name": "Overview",
+      "summary": "Renders dashboard metrics, daily transaction activity, risk distribution, and recent transactions.",
+      "tags": [
+        "component",
+        "react",
+        "dashboard",
+        "charts"
+      ],
+      "complexity": "complex",
+      "filePath": "frontend/src/main.jsx",
+      "relationships": [
+        "frontend/src/main.jsx",
+        "backend/app/main.py"
+      ]
+    },
+    {
+      "id": "file:frontend/src/main.jsx::Transactions",
+      "type": "class",
+      "name": "Transactions",
+      "summary": "Renders searchable and risk-filtered transaction pages with pagination and CSV export.",
+      "tags": [
+        "component",
+        "react",
+        "transactions",
+        "export"
+      ],
+      "complexity": "moderate",
+      "filePath": "frontend/src/main.jsx",
+      "relationships": [
+        "frontend/src/api.js"
+      ]
+    },
+    {
+      "id": "file:frontend/src/main.jsx::Lab",
+      "type": "class",
+      "name": "Lab",
+      "summary": "Collects transaction features and submits them to the analysis endpoint, displaying risk, thresholds, and top deviations.",
+      "tags": [
+        "component",
+        "react",
+        "inference",
+        "forms"
+      ],
+      "complexity": "complex",
+      "filePath": "frontend/src/main.jsx",
+      "relationships": [
+        "frontend/src/api.js",
+        "backend/app/main.py"
+      ]
+    },
+    {
+      "id": "file:frontend/src/main.jsx::Detail",
+      "type": "class",
+      "name": "Detail",
+      "summary": "Displays transaction investigation details and submits a human review decision and notes.",
+      "tags": [
+        "component",
+        "react",
+        "review-workflow"
+      ],
+      "complexity": "moderate",
+      "filePath": "frontend/src/main.jsx",
+      "relationships": [
+        "frontend/src/api.js",
+        "backend/app/main.py"
+      ]
+    },
+    {
+      "id": "file:frontend/src/api.js::api",
+      "type": "function",
+      "name": "api",
+      "summary": "Fetches JSON from the backend API, converts HTTP failures into user-facing errors, and supports configurable API base URLs.",
+      "tags": [
+        "function",
+        "http-client",
+        "errors"
+      ],
+      "complexity": "moderate",
+      "filePath": "frontend/src/api.js",
+      "relationships": [
+        "backend/app/main.py"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge:main-db",
+      "source": "file:backend/app/main.py",
+      "target": "file:backend/app/db.py",
+      "type": "imports",
+      "summary": "FastAPI service uses SQLite connection, initialization, insertion, and row conversion helpers.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:main-model",
+      "source": "file:backend/app/main.py",
+      "target": "file:backend/app/model.py",
+      "type": "imports",
+      "summary": "Service constructs and trains the anomaly detector and requests transaction scores.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:main-synthetic",
+      "source": "file:backend/app/main.py",
+      "target": "file:backend/app/synthetic.py",
+      "type": "imports",
+      "summary": "Service generates training and evaluation datasets for the demo lifecycle.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:model-db",
+      "source": "file:backend/app/model.py",
+      "target": "file:backend/app/db.py",
+      "type": "imports",
+      "summary": "Detector obtains the local data directory for its trusted model checkpoint.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:test-main",
+      "source": "file:backend/tests/test_api.py",
+      "target": "file:backend/app/main.py",
+      "type": "tests",
+      "summary": "End-to-end test imports and exercises the FastAPI application.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:frontend-entry",
+      "source": "file:frontend/index.html",
+      "target": "file:frontend/src/main.jsx",
+      "type": "loads",
+      "summary": "HTML module entry point loads the React root module.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:frontend-api",
+      "source": "file:frontend/src/main.jsx",
+      "target": "file:frontend/src/api.js",
+      "type": "imports",
+      "summary": "Dashboard components use the shared API client and formatters.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:frontend-css",
+      "source": "file:frontend/src/main.jsx",
+      "target": "file:frontend/src/style.css",
+      "type": "imports",
+      "summary": "React root imports the dashboard stylesheet.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:frontend-backend",
+      "source": "file:frontend/src/api.js",
+      "target": "file:backend/app/main.py",
+      "type": "calls",
+      "summary": "Frontend HTTP requests target FastAPI routes under the /api prefix.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:vite-backend",
+      "source": "file:frontend/vite.config.js",
+      "target": "file:backend/app/main.py",
+      "type": "proxies",
+      "summary": "Vite development proxy forwards /api requests to the local FastAPI server.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:db-connect",
+      "source": "file:backend/app/db.py",
+      "target": "file:backend/app/db.py::connect",
+      "type": "contains",
+      "summary": "Database module defines the SQLite connection context manager.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:db-init",
+      "source": "file:backend/app/db.py",
+      "target": "file:backend/app/db.py::initialize",
+      "type": "contains",
+      "summary": "Database module defines schema initialization.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:db-insert",
+      "source": "file:backend/app/db.py",
+      "target": "file:backend/app/db.py::insert_many",
+      "type": "contains",
+      "summary": "Database module defines bulk transaction insertion.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:model-features",
+      "source": "file:backend/app/model.py",
+      "target": "file:backend/app/model.py::features",
+      "type": "contains",
+      "summary": "Model module defines transaction feature extraction.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:model-vae",
+      "source": "file:backend/app/model.py",
+      "target": "file:backend/app/model.py::VAE",
+      "type": "contains",
+      "summary": "Model module defines the neural autoencoder architecture.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:model-detector",
+      "source": "file:backend/app/model.py",
+      "target": "file:backend/app/model.py::Detector",
+      "type": "contains",
+      "summary": "Model module defines detector lifecycle and scoring behavior.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:synthetic-generate",
+      "source": "file:backend/app/synthetic.py",
+      "target": "file:backend/app/synthetic.py::generate",
+      "type": "contains",
+      "summary": "Synthetic module defines seeded record generation.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:main-app",
+      "source": "file:backend/app/main.py",
+      "target": "file:backend/app/main.py::app",
+      "type": "contains",
+      "summary": "Main module exposes the FastAPI application instance.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:main-input",
+      "source": "file:backend/app/main.py",
+      "target": "file:backend/app/main.py::TransactionInput",
+      "type": "contains",
+      "summary": "Main module defines validated analysis input.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:main-review",
+      "source": "file:backend/app/main.py",
+      "target": "file:backend/app/main.py::ReviewInput",
+      "type": "contains",
+      "summary": "Main module defines validated review input.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:main-seed",
+      "source": "file:backend/app/main.py",
+      "target": "file:backend/app/main.py::seed_demo",
+      "type": "contains",
+      "summary": "Main module defines demo initialization and training orchestration.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:main-rescore",
+      "source": "file:backend/app/main.py",
+      "target": "file:backend/app/main.py::rescore_all",
+      "type": "contains",
+      "summary": "Main module defines persisted transaction rescoring.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:test-symbol",
+      "source": "file:backend/tests/test_api.py",
+      "target": "file:backend/tests/test_api.py::test_end_to_end",
+      "type": "contains",
+      "summary": "Test module defines its end-to-end scenario.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:app-symbol",
+      "source": "file:frontend/src/main.jsx",
+      "target": "file:frontend/src/main.jsx::App",
+      "type": "contains",
+      "summary": "Frontend root module defines the shared application shell.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:overview-symbol",
+      "source": "file:frontend/src/main.jsx",
+      "target": "file:frontend/src/main.jsx::Overview",
+      "type": "contains",
+      "summary": "Frontend root module defines the overview page.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:transactions-symbol",
+      "source": "file:frontend/src/main.jsx",
+      "target": "file:frontend/src/main.jsx::Transactions",
+      "type": "contains",
+      "summary": "Frontend root module defines transaction exploration.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:lab-symbol",
+      "source": "file:frontend/src/main.jsx",
+      "target": "file:frontend/src/main.jsx::Lab",
+      "type": "contains",
+      "summary": "Frontend root module defines the inference lab.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:detail-symbol",
+      "source": "file:frontend/src/main.jsx",
+      "target": "file:frontend/src/main.jsx::Detail",
+      "type": "contains",
+      "summary": "Frontend root module defines the review drawer.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:api-symbol",
+      "source": "file:frontend/src/api.js",
+      "target": "file:frontend/src/api.js::api",
+      "type": "contains",
+      "summary": "API module defines the shared request wrapper.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:package-main",
+      "source": "file:frontend/package.json",
+      "target": "file:frontend/src/main.jsx",
+      "type": "configures",
+      "summary": "Package manifest supplies React, charting, icon, and build dependencies used by the dashboard.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:package-vite",
+      "source": "file:frontend/package.json",
+      "target": "file:frontend/vite.config.js",
+      "type": "configures",
+      "summary": "Package manifest supplies Vite and its React plugin.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:pytest-test",
+      "source": "file:backend/pytest.ini",
+      "target": "file:backend/tests/test_api.py",
+      "type": "configures",
+      "summary": "Pytest configuration selects the backend test root and import path.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:requirements-main",
+      "source": "file:backend/requirements.txt",
+      "target": "file:backend/app/main.py",
+      "type": "provides-dependencies",
+      "summary": "Backend manifest provides FastAPI, Pydantic, and HTTP server dependencies.",
+      "direction": "forward"
+    },
+    {
+      "id": "edge:requirements-model",
+      "source": "file:backend/requirements.txt",
+      "target": "file:backend/app/model.py",
+      "type": "provides-dependencies",
+      "summary": "Backend manifest provides NumPy, scikit-learn, and PyTorch dependencies.",
+      "direction": "forward"
+    }
+  ],
+  "layers": [
+    {
+      "id": "documentation",
+      "name": "Documentation and project guidance",
+      "description": "Explains the educational prototype, its architecture, operating constraints, setup, API surface, and contributor guidance.",
+      "nodeIds": [
+        "document:README.md",
+        "document:CODEX.md"
+      ]
+    },
+    {
+      "id": "runtime-and-dependency-configuration",
+      "name": "Runtime and dependency configuration",
+      "description": "Provides environment overrides and declares the backend test/runtime dependencies used by the application.",
+      "nodeIds": [
+        "config:.env.example",
+        "file:backend/requirements.txt",
+        "file:backend/pytest.ini"
+      ]
+    },
+    {
+      "id": "backend-persistence",
+      "name": "Backend persistence layer",
+      "description": "Owns SQLite database location, connection lifecycle, schema creation, transaction/review storage, bulk inserts, and row conversion.",
+      "nodeIds": [
+        "file:backend/app/db.py"
+      ]
+    },
+    {
+      "id": "backend-detection-domain",
+      "name": "Synthetic data and anomaly-detection domain",
+      "description": "Generates reproducible synthetic purchase behavior and trains, persists, calibrates, and applies the PyTorch VAE anomaly detector.",
+      "nodeIds": [
+        "file:backend/app/model.py",
+        "file:backend/app/synthetic.py"
+      ]
+    },
+    {
+      "id": "backend-api",
+      "name": "FastAPI application and HTTP API",
+      "description": "Bootstraps the backend, initializes and seeds the demo, coordinates persistence and detection services, and exposes health, transaction, review, model, retraining, reset, analysis, and evaluation endpoints.",
+      "nodeIds": [
+        "file:backend/app/__init__.py",
+        "file:backend/app/main.py"
+      ]
+    },
+    {
+      "id": "frontend-dashboard",
+      "name": "React dashboard and API integration",
+      "description": "Implements the browser dashboard, navigation, transaction monitoring and review workflows, analysis lab, model views, styling, and the client wrapper for backend REST calls.",
+      "nodeIds": [
+        "file:frontend/index.html",
+        "file:frontend/package.json",
+        "file:frontend/src/api.js",
+        "file:frontend/src/main.jsx",
+        "file:frontend/src/style.css",
+        "file:frontend/vite.config.js"
+      ]
+    },
+    {
+      "id": "development-startup",
+      "name": "Development startup tooling",
+      "description": "Provides platform-specific entry scripts that create or activate backend environments, install dependencies, and launch the FastAPI or Vite development servers.",
+      "nodeIds": [
+        "file:start-backend.bat",
+        "file:start-backend.sh",
+        "file:start-frontend.bat",
+        "file:start-frontend.sh"
+      ]
+    },
+    {
+      "id": "backend-validation",
+      "name": "Backend integration validation",
+      "description": "Exercises the running FastAPI application through its lifecycle and representative health, overview, transaction, review, analysis, evaluation, model, and error paths.",
+      "nodeIds": [
+        "file:backend/tests/test_api.py"
+      ]
+    }
+  ],
+  "tour": [
+    {
+      "order": 1,
+      "title": "Project Overview",
+      "description": "Begin with the README to understand IAPGuard AI as an educational, synthetic-data prototype: a React dashboard over a FastAPI service that uses a PyTorch variational autoencoder to identify unusual in-app purchase behavior. Review the documented architecture, local setup, API surface, and safety limitations before exploring implementation details.",
+      "nodeIds": [
+        "document:README.md",
+        "document:CODEX.md"
+      ]
+    },
+    {
+      "order": 2,
+      "title": "Backend API and Application Lifecycle",
+      "description": "Follow the FastAPI application in main.py from lifespan startup through database initialization, model loading or training, synthetic seeding, and rescoring. Then trace the health, overview, transaction, review, analysis, model, retraining, reset, and evaluation endpoints, including the Pydantic request validation and demo-only behavior.",
+      "nodeIds": [
+        "file:backend/app/__init__.py",
+        "file:backend/app/main.py"
+      ]
+    },
+    {
+      "order": 3,
+      "title": "Persistence and Synthetic Data",
+      "description": "Study db.py to see how the SQLite data directory is configured, connections commit or roll back, tables and indexes are created, and transactions and reviews are stored. Compare that schema with synthetic.py, which produces reproducible normal records and injected anomaly patterns for the seeded demo and evaluation metrics.",
+      "nodeIds": [
+        "file:backend/app/db.py",
+        "file:backend/app/synthetic.py",
+        "config:.env.example"
+      ]
+    },
+    {
+      "order": 4,
+      "title": "VAE Anomaly Detection",
+      "description": "Trace model.py's eleven engineered features, scaling, encoder and decoder, latent sampling during training, deterministic inference, reconstruction-error scoring, residual ranking, percentile calibration, and local checkpoint persistence. Connect these mechanics to the API's risk levels and the dashboard's interpretation that anomaly scores are not fraud probabilities or causal explanations.",
+      "nodeIds": [
+        "file:backend/app/model.py",
+        "file:backend/app/main.py",
+        "file:backend/requirements.txt"
+      ]
+    },
+    {
+      "order": 5,
+      "title": "Frontend Dashboard and API Integration",
+      "description": "Start at the Vite HTML entry point and main.jsx to learn the single-page navigation, overview metrics and charts, transaction explorer, alert queue, detection lab, model insights, and review drawer. Then read api.js for the shared REST wrapper, error handling, formatting helpers, and configurable API base URL; finish with the Vite proxy and responsive styling.",
+      "nodeIds": [
+        "file:frontend/index.html",
+        "file:frontend/src/main.jsx",
+        "file:frontend/src/api.js",
+        "file:frontend/src/style.css",
+        "file:frontend/package.json",
+        "file:frontend/vite.config.js"
+      ]
+    },
+    {
+      "order": 6,
+      "title": "Backend Integration Tests",
+      "description": "Use the pytest configuration and test_api.py as an executable tour of the backend contract. The end-to-end test isolates its database and model directory, verifies startup and readiness, exercises overview, filtering, details, reviews, manual analysis, evaluation, and model endpoints, and confirms the not-found path.",
+      "nodeIds": [
+        "file:backend/tests/test_api.py",
+        "file:backend/pytest.ini",
+        "file:backend/requirements.txt"
+      ]
+    },
+    {
+      "order": 7,
+      "title": "Startup and Development Tooling",
+      "description": "Finish by comparing the Windows batch and Unix shell launchers. Each backend script creates or activates a virtual environment, installs requirements, and runs Uvicorn; each frontend script installs npm dependencies when needed and starts Vite. Use the README commands and environment template to understand ports, proxy behavior, and optional configuration overrides.",
+      "nodeIds": [
+        "file:start-backend.bat",
+        "file:start-backend.sh",
+        "file:start-frontend.bat",
+        "file:start-frontend.sh",
+        "config:.env.example",
+        "document:README.md"
+      ]
+    }
+  ]
+}

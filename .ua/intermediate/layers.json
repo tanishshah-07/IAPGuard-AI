@@ -1,0 +1,79 @@
+[
+  {
+    "id": "documentation",
+    "name": "Documentation and project guidance",
+    "description": "Explains the educational prototype, its architecture, operating constraints, setup, API surface, and contributor guidance.",
+    "nodeIds": [
+      "document:README.md",
+      "document:CODEX.md"
+    ]
+  },
+  {
+    "id": "runtime-and-dependency-configuration",
+    "name": "Runtime and dependency configuration",
+    "description": "Provides environment overrides and declares the backend test/runtime dependencies used by the application.",
+    "nodeIds": [
+      "config:.env.example",
+      "file:backend/requirements.txt",
+      "file:backend/pytest.ini"
+    ]
+  },
+  {
+    "id": "backend-persistence",
+    "name": "Backend persistence layer",
+    "description": "Owns SQLite database location, connection lifecycle, schema creation, transaction/review storage, bulk inserts, and row conversion.",
+    "nodeIds": [
+      "file:backend/app/db.py"
+    ]
+  },
+  {
+    "id": "backend-detection-domain",
+    "name": "Synthetic data and anomaly-detection domain",
+    "description": "Generates reproducible synthetic purchase behavior and trains, persists, calibrates, and applies the PyTorch VAE anomaly detector.",
+    "nodeIds": [
+      "file:backend/app/model.py",
+      "file:backend/app/synthetic.py"
+    ]
+  },
+  {
+    "id": "backend-api",
+    "name": "FastAPI application and HTTP API",
+    "description": "Bootstraps the backend, initializes and seeds the demo, coordinates persistence and detection services, and exposes health, transaction, review, model, retraining, reset, analysis, and evaluation endpoints.",
+    "nodeIds": [
+      "file:backend/app/__init__.py",
+      "file:backend/app/main.py"
+    ]
+  },
+  {
+    "id": "frontend-dashboard",
+    "name": "React dashboard and API integration",
+    "description": "Implements the browser dashboard, navigation, transaction monitoring and review workflows, analysis lab, model views, styling, and the client wrapper for backend REST calls.",
+    "nodeIds": [
+      "file:frontend/index.html",
+      "file:frontend/package.json",
+      "file:frontend/src/api.js",
+      "file:frontend/src/main.jsx",
+      "file:frontend/src/style.css",
+      "file:frontend/vite.config.js"
+    ]
+  },
+  {
+    "id": "development-startup",
+    "name": "Development startup tooling",
+    "description": "Provides platform-specific entry scripts that create or activate backend environments, install dependencies, and launch the FastAPI or Vite development servers.",
+    "nodeIds": [
+      "file:start-backend.bat",
+      "file:start-backend.sh",
+      "file:start-frontend.bat",
+      "file:start-frontend.sh"
+    ]
+  },
+  {
+    "id": "backend-validation",
+    "name": "Backend integration validation",
+    "description": "Exercises the running FastAPI application through its lifecycle and representative health, overview, transaction, review, analysis, evaluation, model, and error paths.",
+    "nodeIds": [
+      "file:backend/tests/test_api.py"
+    ]
+  }
+]

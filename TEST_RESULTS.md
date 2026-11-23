@@ -16,14 +16,13 @@ cd D:\important\IAPGuard_AI_Download_2026_11_12\iapguard-ai\backend
 Result:
 
 ```text
-1 passed
-2 warnings
+9 passed
+1 warning
 ```
 
 Warnings:
 
 1. FastAPI/Starlette test client deprecation notice involving `httpx2`.
-2. pytest could not write `backend/.pytest_cache` due to access denied.
 
 Test coverage:
 
@@ -39,6 +38,10 @@ Test coverage:
 - Retrain and transaction rescore
 - Reset and review deletion
 - Readiness across a second TestClient lifecycle
+- Historical math, boundary, cold-start and zero-variance behavior
+- Equal-time exclusion, future/self exclusion, and chronological feature order
+- Label-independent features, training/API feature parity, and old checkpoint rejection
+- Backward-compatible SQLite migration and API response fields
 
 **Status:** PARTIALLY COMPLETED. It is an integration smoke test, not full unit/model/security coverage.
 
@@ -97,7 +100,17 @@ Observed synthetic metrics:
 {"available":true,"precision":0.9273,"recall":0.9871,"f1":0.9563,"false_positive_rate":0.0115,"confusion":{"tp":153,"fp":12,"tn":1033,"fn":2}}
 ```
 
-These metrics apply only to seeded synthetic data and must not be presented as real production performance.
+These legacy metrics used all 1,200 rows and are not comparable to the chronological held-out result below.
+
+## Milestone 1 Chronological Held-Out Metrics
+
+The current pipeline reports metrics only for the later 15% test period (180 records in the seeded demo), after normal-only training and calibration on earlier periods. One seeded evaluation produced:
+
+```json
+{"available":true,"precision":0.7895,"recall":0.6,"f1":0.6818,"false_positive_rate":0.0258,"confusion":{"tp":15,"fp":4,"tn":151,"fn":10}}
+```
+
+This is synthetic-data evaluation only. The legacy result used all rows and is not an apples-to-apples baseline. Neither result demonstrates real fraud-detection performance.
 
 ## SQLite Data Consistency
 
@@ -105,12 +118,10 @@ Observed persisted database:
 
 - Tables: `transactions`, `reviews`, indexes and SQLite primary-key indexes
 - Transaction rows: 1,200
-- Synthetic-fraud rows: 155
+- Chronological partitions: 840 train, 180 calibration, 180 test
 - Null anomaly scores: 0
 - Duplicate transaction IDs: 0
-- High-risk: 165
-- Medium-risk: 35
-- Low-risk: 1,000
+- Scored risk bands in one seeded validation run: 70 high, 32 medium, 1,098 low
 - Review rows: 0
 
 The database contained repeated user IDs, but source inspection and SQL checks found no calculated rolling per-user history.

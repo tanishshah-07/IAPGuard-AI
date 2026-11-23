@@ -1,5 +1,9 @@
 # IAPGuard AI - Complete Technical Audit
 
+## Milestone 1 implementation update (2026-11-23)
+
+Per-user point-in-time behavioral features are now implemented in `backend/app/model.py`; synthetic records use repeated user histories; training/calibration/test periods are chronological; and `/api/analyze` consults stored history without persisting the request. See the updated architecture and test results for the feature schema, split definitions, migration, test run and synthetic held-out metrics. Remaining concerns include unauthenticated client-supplied user IDs, synthetic-only evaluation, and non-production deployment controls.
+
 **Audit date:** 2026-11-23  
 **Scope:** Initial read-only technical audit; no existing source files were modified.  
 **Environment:** Windows, repository root `iapguard-ai`.
@@ -49,14 +53,14 @@ It is **not a production fraud detector** and should not be presented as one. Ma
 
 | Requirement | Actual implementation | Source file and function | Evidence or test result | Missing work | Priority | Status |
 |---|---|---|---|---|---|---|
-| Dataset source | Reproducible in-process generator | `backend/app/synthetic.py:generate()` | Seeds 27 for 1,200 demo records and 101 for 1,500 normals | Document and acquire real/approved dataset where applicable | High | COMPLETED |
+| Dataset source | Reproducible in-process generator with user-specific spending and cadence | `backend/app/synthetic.py:generate()` | Seed 27 creates 1,200 chronologically ordered rows | Document and acquire real/approved dataset where applicable | High | COMPLETED |
 | Synthetic/real distinction | Synthetic by default and labeled `source='demo'`, `is_synthetic_fraud` | `generate()`, `DB transactions` | Persisted database: 1,200 records; 155 synthetic-fraud labels | Real-data ingestion/privacy controls | High | COMPLETED |
 | Transaction fields | id, user, timestamp, amount, hour, account age, 24h count, failed attempts, 7d methods/devices, mismatch, purchase type, score/risk/status/label/source | `backend/app/db.py:initialize()` | SQLite schema and data inspected | Real payment identifiers and timestamps at required granularity | Medium | COMPLETED |
 | Cleaning/preprocessing | Direct numeric conversion, feature log transforms and `StandardScaler` | `backend/app/model.py:features()`, `train()` | No missing-value imputation or outlier-validation pipeline | Missing/invalid value handling, schema validation for stored records | High | PARTIALLY COMPLETED |
 | Missing values | API Pydantic rejects omitted required fields; synthetic generator complete | `main.py:TransactionInput`, `synthetic.py:generate()` | Persisted database null score count was zero; score is not a raw input field | Dataset-wide missingness report and imputation policy | High | NOT VERIFIED |
 | Data consistency | SQLite ID primary key, foreign-key review key, indexes | `db.py:initialize()` | 1,200 unique IDs; no duplicate IDs; 165 high, 35 medium, 1,000 low | Domain constraints and transaction integrity tests | Medium | COMPLETED |
-| Per-user behavioral history | Dataset has repeated synthetic `user_id` values, but no user history is calculated | `synthetic.py:generate()` | Values such as purchases_24h are independently generated | Calculate rolling frequency, spend, device, method and failure history from ordered user transactions | High | NOT IMPLEMENTED |
-| Data leakage | Synthetic `is_synthetic_fraud` is not in features | `model.py:FEATURE_NAMES`, `synthetic.py:generate()` | 11 feature names contain no label or source field | Temporal leakage audit and train/evaluation separation | Medium | COMPLETED |
+| Per-user behavioral history | Shared strict point-in-time feature builder computes counts, spend baseline, elapsed time, windows and category shift | `model.py:features()`, `feature_matrix()` | Unit tests cover math, chronology, equal timestamps, future/self exclusion and cold start | Broader real-world sequence validation and identity isolation | High | COMPLETED (prototype) |
+| Data leakage | Synthetic `is_synthetic_fraud` is not in features; behavioral features are strict earlier-only | `model.py:FEATURE_NAMES`, `features()`, `feature_matrix()` | Tests flip labels, exclude future/equal-time/self rows | More seed and real chronological validation | Medium | COMPLETED (prototype) |
 
 **Transaction-field inspection:** The 11 modeled fields are `amount`, `hour`, `account_age_days`, `purchases_24h`, `failed_attempts_24h`, `payment_methods_7d`, `device_changes_7d`, `country_mismatch`, and purchase category (`subscription`, `coaching`, with workout as the implicit third state).
 
@@ -99,8 +103,8 @@ It is **not a production fraud detector** and should not be presented as one. Ma
 | Reparameterization | `z = mu + randn * exp(0.5*logvar)` | `VAE.forward()` | Training-only sampling | Not missing | Low | COMPLETED |
 | Reconstruction loss | Mean squared standardized residual | `train()` | `mean((reconstructed-batch)^2)` | Per-feature weighted reconstruction where appropriate | Medium | COMPLETED |
 | KL divergence | Closed-form diagonal Gaussian KL | `train()` | `-0.5 mean sum(1+logvar-mu^2-exp(logvar))` | Beta scheduling/annealing experiment | Medium | COMPLETED |
-| Normal-only training | 1,500 records with fraud_rate zero | `main.py:update_demo()`, `Detector.train()` | 80% training, 20% calibration | Cross-validation and out-of-time split | High | COMPLETED |
-| Train/calibration split | Random 80/20 split | `Detector.train()` | 1,200 fit and 300 calibration from the 1,500 normals | Stratified/out-of-time split and independent test set | High | PARTIALLY COMPLETED |
+| Normal-only training | Normal rows from earliest 70% chronological period | `main.py:update_demo()`, `Detector.train()` | 70/15/15 train/calibration/test; only normal rows fit | Cross-validation and more seeds | High | COMPLETED (synthetic) |
+| Train/calibration/test split | Chronological 70/15/15 split | `Detector.train()` | Scaler fit on train normals; thresholds on calibration normals; metrics on later mixed test | Real out-of-time validation | High | COMPLETED (synthetic) |
 | Scaler fitting | Fit on training split only | `train()` | `StandardScaler().fit(fit_data)` | Persist scaler format metadata | Medium | COMPLETED |
 | Checkpoint save/load | Atomic temp replace; CPU load and weights-only torch load | `save()`, `load()` | `backend/data/vae.pt` exists; tests health-ready | Model schema/checksum/version and migration handling | Medium | COMPLETED |
 
@@ -146,7 +150,7 @@ These were measured against seeded synthetic labels and high-risk predictions on
 | `POST /api/analyze` | Stateless feature scoring | Pydantic field constraints | COMPLETED |
 | `POST /api/transactions/{id}/review` | Insert/update review | 404 for unknown tx; resolution/note constraints | COMPLETED |
 | `GET /api/model` | Architecture/training/threshold metadata | Model-ready handling | COMPLETED |
-| `POST /api/model/retrain` | Retrain 1,500 normals and rescore 1,200 records | Lock protects model state | COMPLETED |
+| `POST /api/model/retrain` | Chronological normal-only fit/calibration and rescore stored rows using history | Lock protects model state | COMPLETED |
 | `GET /api/evaluation` | Synthetic metrics/confusion | Available flag when no labels | COMPLETED |
 | `POST /api/demo/reset` | Delete/seed and retrain | Lock plus transaction writes | COMPLETED |
 
@@ -190,7 +194,7 @@ The official project rubric was not present in the repository. Compliance below 
 | Requirement | Status | Auditor assessment |
 |---|---|---|
 | Purchase dataset preparation | PARTIALLY COMPLETED | Synthetic generator is complete; real acquisition, cleaning and audit pipeline are absent |
-| Behavioral feature engineering | PARTIALLY COMPLETED | 11 features exist; per-user rolling behavior is absent |
+| Behavioral feature engineering | COMPLETED (prototype) | 19 inputs include strict earlier-only per-user spending, frequency, recency and category history |
 | PyTorch VAE | COMPLETED | Real PyTorch implementation and persisted checkpoint |
 | Unsupervised anomaly detection | COMPLETED | Normal-only training and reconstruction anomaly score |
 | Anomaly scoring and threshold | COMPLETED | 95th/99th percentile threshold bands |
@@ -200,12 +204,12 @@ The official project rubric was not present in the repository. Compliance below 
 
 ## Top-Level Findings
 
-1. **High:** Real behavioral history and rolling features are not computed.
+1. **High:** Behavioral history is now computed for the prototype; user IDs remain client-supplied and unauthenticated.
 2. **High:** Dataset is entirely synthetic; no real-world or independent evaluation exists.
 3. **High:** No authentication or authorization around the admin/retraining/reset APIs.
 4. **High:** Evaluation metrics are optimistic synthetic results, not real fraud performance.
 5. **High:** Browser and frontend test coverage is absent.
-6. **High:** Random 80/20 normal split is not a real temporal or independent test protocol.
+6. **High:** Evaluation is now chronological but remains synthetic and single-seed, not a real independent evaluation.
 7. **Medium:** Feature residual explanations are reconstruction residuals, not causal evidence.
 8. **Medium:** `main.py:update_demo()` hardcodes 24 epochs while README calls 28 in one architecture description; startup report controls actual behavior.
 9. **Medium:** The VAE model metadata and architecture are not self-validated on load.

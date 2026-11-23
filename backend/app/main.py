@@ -8,7 +8,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from .db import connect, initialize, insert_many, row_to_dict
-from .model import Detector
+from .model import Detector, as_utc
 from .synthetic import generate
 
 model_lock = Lock()
@@ -25,16 +25,18 @@ class TransactionInput(BaseModel):
     device_changes_7d: int = Field(ge=0,le=10000)
     country_mismatch: bool = False
     purchase_type: Literal['subscription','workout','coaching'] = 'subscription'
+    timestamp: datetime | None = None
 
 class ReviewInput(BaseModel):
     resolution: Literal['confirmed_fraud','legitimate','needs_review']
     note: str = Field(default='', max_length=500)
 
 def rescore_all(db, model):
-    rows = db.execute('SELECT * FROM transactions').fetchall()
+    rows = [dict(row) for row in db.execute('SELECT * FROM transactions').fetchall()]
+    rows.sort(key=lambda row:(as_utc(row['timestamp']),str(row['id'])))
     updates = []
     for row in rows:
-        prediction = model.score(row)
+        prediction = model.score(row, rows)
         updates.append((prediction['anomaly_score'], prediction['risk_level'], row['id']))
     db.executemany('UPDATE transactions SET anomaly_score=?,risk_level=? WHERE id=?', updates)
     return len(updates)
@@ -43,12 +45,19 @@ def update_demo(*, replace_transactions=False):
     global detector
     with model_lock:
         candidate = Detector(load_existing=False)
-        info = candidate.train(generate(count=1500, fraud_rate=0, seed=101), epochs=24)
+        records = generate(count=1200, fraud_rate=.12, seed=27)
+        train_end=int(len(records)*.70); calibration_end=int(len(records)*.85)
+        training=records[:train_end]; calibration=records[train_end:calibration_end]
+        testing=records[calibration_end:]
+        for row in training: row['evaluation_partition']='train'
+        for row in calibration: row['evaluation_partition']='calibration'
+        for row in testing: row['evaluation_partition']='test'
+        info = candidate.train(training, calibration, epochs=24)
         with connect() as db:
             if replace_transactions:
                 db.execute('DELETE FROM reviews')
                 db.execute('DELETE FROM transactions')
-                insert_many(db, generate(count=1200, fraud_rate=.12, seed=27))
+                insert_many(db, records)
             total = rescore_all(db, candidate)
             candidate.save()
         detector = candidate
@@ -124,13 +133,20 @@ def transaction_detail(transaction_id:str):
         row=db.execute('SELECT * FROM transactions WHERE id=?',(transaction_id,)).fetchone()
         if not row: raise HTTPException(404,'Transaction not found')
         review=db.execute('SELECT * FROM reviews WHERE transaction_id=?',(transaction_id,)).fetchone()
-        prediction=detector.score(row)
+        history=db.execute('SELECT * FROM transactions WHERE user_id=?',(row['user_id'],)).fetchall()
+        prediction=detector.score(row,history)
     return {'transaction':dict(row),'analysis':prediction,'review':row_to_dict(review)}
 
 @app.post('/api/analyze')
 def analyze(payload:TransactionInput):
     tx=payload.model_dump();tx['country_mismatch']=int(tx['country_mismatch'])
-    with model_lock: prediction=detector.score(tx)
+    timestamp=tx['timestamp'] or datetime.now(timezone.utc)
+    timestamp=as_utc(timestamp).isoformat(timespec='seconds')
+    tx['timestamp']=timestamp
+    with model_lock, connect() as db:
+        history=[dict(row) for row in db.execute(
+            'SELECT * FROM transactions WHERE user_id=?',(tx['user_id'],)).fetchall()]
+        prediction=detector.score(tx,history)
     return {'analysis':prediction,'transaction':tx,'saved':False,
             'notice':'Scoring does not charge a payment or save the transaction.'}
 
@@ -170,7 +186,7 @@ def reset_demo():
 def evaluation():
     """Illustrative label-based metrics. Not real-world fraud efficacy."""
     with connect() as db:
-        rows=db.execute('SELECT risk_level,is_synthetic_fraud FROM transactions WHERE is_synthetic_fraud IS NOT NULL').fetchall()
+        rows=db.execute("SELECT risk_level,is_synthetic_fraud FROM transactions WHERE is_synthetic_fraud IS NOT NULL AND evaluation_partition='test'").fetchall()
     if not rows: return {'available':False}
     tp=sum(r['risk_level']=='high' and r['is_synthetic_fraud']==1 for r in rows)
     fp=sum(r['risk_level']=='high' and r['is_synthetic_fraud']==0 for r in rows)

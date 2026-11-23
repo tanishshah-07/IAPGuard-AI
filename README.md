@@ -7,14 +7,19 @@ A full-stack **educational prototype** for the **Sports & Fitness Tech** domain.
 ## Features
 
 - Modern responsive dark dashboard with transaction trends, risk breakdown and recent activity
-- 1,200 generated sample in-app purchases, with separate synthetic training and evaluation data
-- VAE model trained on normal-only transactions; 95th/99th percentile calibration from held-out normals
+- 1,200 generated purchases in coherent repeated-user timelines with varied spending and category patterns
+- 19-feature VAE trained on normal transactions from a chronological 70/15/15 train/calibration/test split
+- Point-in-time per-user spend baselines, purchase intervals, rolling counts, and category-shift features
 - Live inference form with reconstructed-feature deviations
 - Filterable/paginated transaction explorer, export current page to CSV
 - High-risk investigation queue; persist review decisions and notes in SQLite
 - Synthetic precision, recall, F1, false-positive rate and confusion counts
 - Retrain VAE / reset data via UI; persisted model weights in `backend/data/vae.pt`
 - OpenAPI reference at `/docs`; backend API integration test
+
+The stateless `/api/analyze` endpoint accepts an optional ISO timestamp (defaults to current UTC), looks up earlier stored transactions for the supplied user ID, and does not save the submitted transaction. The legacy `purchases_24h` request field remains accepted but is not used as a model input. Checkpoints use feature schema version 2; older incompatible checkpoints are retrained during startup. Existing SQLite files are migrated additively with an evaluation-partition column and a user-history index.
+
+Per-user history is a prototype behavior only: `user_id` is client-supplied and there is no authentication or tenant isolation. All model metrics remain synthetic and are not evidence of real fraud performance.
 
 ## Stack
 

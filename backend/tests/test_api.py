@@ -23,6 +23,10 @@ def test_end_to_end():
             'payment_methods_7d':8,'device_changes_7d':5,'country_mismatch':True,
             'purchase_type':'subscription'})
         assert result.status_code==200
+        assert set(('analysis','transaction','saved','notice')).issubset(result.json())
+        assert result.json()['saved'] is False
+        assert 'timestamp' in result.json()['transaction']
+        assert result.json()['transaction']['hour'] == 2
         assert result.json()['analysis']['risk_level'] in ('low','medium','high')
         assert client.get('/api/evaluation').json()['available']
         assert client.get('/api/model').json()['ready']

@@ -32,8 +32,8 @@ React dashboard
 ## Data Flow
 
 1. Startup calls `initialize()` and creates SQLite tables.
-2. If no transactions exist or no checkpoint is ready, `update_demo()` generates 1,500 normal records, trains the VAE, then generates and inserts 1,200 synthetic mixed records.
-3. `Detector.score()` converts each row to 11 standardized features and calculates reconstruction error.
+2. `update_demo()` generates one coherent 1,200-row repeated-user timeline, assigns 70/15/15 chronological train/calibration/test partitions, trains on normal training rows, and calibrates on normal calibration rows.
+3. `Detector.score()` combines a transaction with strictly earlier same-user history, converts it to 19 standardized features, and calculates reconstruction error.
 4. FastAPI returns overview, transaction, lab, review and evaluation data.
 5. React fetches REST endpoints through Vite's `/api` proxy or `VITE_API_URL`.
 6. Review decisions are persisted in SQLite without mutating model labels.
@@ -45,6 +45,7 @@ React dashboard
 - Default checkpoint: `backend/data/vae.pt`
 - Override DB location: `IAPGUARD_DATA_DIR`
 - Tables: `transactions`, `reviews`
+- `transactions` has an additive `evaluation_partition` column and `(user_id,timestamp,id)` history index; existing databases receive a backward-compatible migration.
 - All demo rows contain synthetic-fraud labels for evaluation
 - No external dataset, CSV import or real payment processor exists
 
@@ -56,28 +57,36 @@ React dashboard
 2. `hour_sin`
 3. `hour_cos`
 4. `log_account_age`
-5. `log_purchases_24h`
-6. `failed_attempts_24h`
-7. `payment_methods_7d`
-8. `device_changes_7d`
-9. `country_mismatch`
-10. `is_subscription`
-11. `is_coaching`
+5. `failed_attempts_24h`
+6. `payment_methods_7d`
+7. `device_changes_7d`
+8. `country_mismatch`
+9. `is_subscription`
+10. `is_coaching`
+11. `log_prior_transaction_count`
+12. `log_historical_average_amount`
+13. `log_historical_amount_std`
+14. `relative_amount_deviation`
+15. `log_seconds_since_previous`
+16. `log_prior_count_1h`
+17. `log_prior_count_24h`
+18. `log_prior_count_7d`
+19. `category_differs_from_history`
 
-The workout category is implicit because it is neither subscription nor coaching.
+History is same-user only, UTC-normalized, strictly earlier than target time, and excludes equal timestamps and the target ID. Window lower bounds are inclusive. Amount spread uses population standard deviation (`ddof=0`); missing history and zero-mean relative deviation yield zero. The historical category is the most frequent category, with lexical tie-break. Legacy `purchases_24h` remains accepted/stored but is not a model input.
 
 ## VAE Architecture
 
 ```text
-11 standardized input features
-  -> Linear 11x32 -> ReLU
+19 standardized input features
+  -> Linear 19x32 -> ReLU
   -> Linear 32x16 -> ReLU
   -> Parallel Linear 16x5 mu
   -> Parallel Linear 16x5 logvar
   -> z (sampling during training; mu during inference)
   -> Linear 5x16 -> ReLU
   -> Linear 16x32 -> ReLU
-  -> Linear 32x11 reconstruction
+  -> Linear 32x19 reconstruction
 ```
 
 Loss:
@@ -88,12 +97,12 @@ KL = -0.5 * mean(sum(1 + logvar - mu^2 - exp(logvar)))
 loss = reconstruction + 0.03 * KL
 ```
 
-Training is performed on fraud-free synthetic records. The scaler is fit on 80% of those normals. The remaining 20% is used to calculate 95th/99th percentile thresholds.
+The scaler is fit only on normal rows in the earliest 70% period. The next 15% period supplies normal calibration rows for 95th/99th percentile thresholds. The final 15% mixed period is held out for synthetic metrics. Sequential histories can include only earlier rows, including earlier rows within calibration/test replay. Checkpoints carry feature schema version 2; prior 11-feature checkpoints are explicitly rejected and retrained at startup.
 
 ## Anomaly Scoring
 
 ```text
-mean over 11 standardized feature residual squares
+mean over 19 standardized feature residual squares
   >= 99th percentile -> high
   >= 95th percentile -> medium
   otherwise -> low

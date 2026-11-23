@@ -33,19 +33,24 @@ def initialize():
           country_mismatch INTEGER NOT NULL, purchase_type TEXT NOT NULL,
           anomaly_score REAL, risk_level TEXT NOT NULL DEFAULT 'unscored',
           status TEXT NOT NULL DEFAULT 'pending', is_synthetic_fraud INTEGER,
-          source TEXT NOT NULL DEFAULT 'demo'
+          source TEXT NOT NULL DEFAULT 'demo',
+          evaluation_partition TEXT NOT NULL DEFAULT 'legacy'
         );
         CREATE INDEX IF NOT EXISTS idx_transactions_timestamp ON transactions(timestamp DESC);
+        CREATE INDEX IF NOT EXISTS idx_transactions_user_history ON transactions(user_id,timestamp,id);
         CREATE INDEX IF NOT EXISTS idx_transactions_risk ON transactions(risk_level);
         CREATE TABLE IF NOT EXISTS reviews (
           transaction_id TEXT PRIMARY KEY REFERENCES transactions(id),
           resolution TEXT NOT NULL, note TEXT NOT NULL DEFAULT '', reviewed_at TEXT NOT NULL
         );
         ''')
+        columns = {row['name'] for row in db.execute('PRAGMA table_info(transactions)')}
+        if 'evaluation_partition' not in columns:
+            db.execute("ALTER TABLE transactions ADD COLUMN evaluation_partition TEXT NOT NULL DEFAULT 'legacy'")
 
 COLUMNS = ('id','user_id','timestamp','amount','hour','account_age_days','purchases_24h',
            'failed_attempts_24h','payment_methods_7d','device_changes_7d','country_mismatch',
-           'purchase_type','anomaly_score','risk_level','status','is_synthetic_fraud','source')
+           'purchase_type','anomaly_score','risk_level','status','is_synthetic_fraud','source','evaluation_partition')
 
 def insert_many(db, records):
     query = f"INSERT INTO transactions ({','.join(COLUMNS)}) VALUES ({','.join(['?']*len(COLUMNS))})"

@@ -8,23 +8,23 @@ Status values are restricted to **COMPLETED**, **PARTIALLY COMPLETED**, **NOT IM
 | Synthetic dataset label | COMPLETED | `is_synthetic_fraud` and `source='demo'` | `generate()`, `db.py:initialize()` | Persisted DB contains 155 fraud labels | Real verified labels | High |
 | Transaction schema | COMPLETED | 16 database fields plus review table | `db.py:initialize()` | Schema inspected | Payment-token-safe integration and audit fields | Medium |
 | Missing-value validation | PARTIALLY COMPLETED | Pydantic validates API fields | `main.py:TransactionInput` | Test posted valid/invalid conditions partly | Dataset missingness and invalid stored-row validation | High |
-| Per-user history | NOT IMPLEMENTED | IDs repeat, but each feature is synthetically supplied | `synthetic.py:generate()` | SQL showed repeated IDs, no derived history | Ordered rolling feature pipeline | High |
+| Per-user history | COMPLETED (prototype) | Shared earlier-only builder derives count, amount baseline/deviation, elapsed time, windows and category change | `model.py:features()`, `feature_matrix()` | Backend tests cover calculations, ties, cold starts and leakage | Authentication and production isolation remain absent | High |
 | Amount log feature | COMPLETED | `log1p(amount)` | `model.py:features()` | In model input matrix | Amount baseline/z-score | Medium |
 | Cyclic hour features | COMPLETED | sine/cosine hour | `model.py:features()` | In model input matrix | Day/week/time-since features | Medium |
 | Account-age feature | COMPLETED | `log1p(account_age_days)` | `model.py:features()` | In model input matrix | Account-age trend/history | Low |
-| Purchase-frequency feature | PARTIALLY COMPLETED | Supplied 24h count | `generate()`, `features()` | Values generated independently | User-relative rolling 24h count | High |
+| Purchase-frequency feature | COMPLETED (prototype) | Prior 1h/24h/7d counts derived from same-user history; legacy count remains in API/DB | `model.py:features()` | Boundary and chronology tests | Real traffic validation | High |
 | Failed-payment feature | COMPLETED | 24h failure count | `features()` | In model input matrix | Failure rate/consecutive failures | Medium |
 | Payment-method feature | COMPLETED | 7d method count | `features()` | In model input matrix | Known/unknown method history | Medium |
 | Device-change feature | COMPLETED | 7d device-change count | `features()` | In model input matrix | Known-device ratio and recency | Medium |
 | Country mismatch | COMPLETED | Boolean/int encoding | `features()` | API and synthetic data | Geo consistency history | Medium |
-| Purchase category | COMPLETED | Subscription and coaching indicators | `features()` | 11 input dimensions | Complete explicit workout indicator | Low |
-| Normal-only VAE training | COMPLETED | 1,500 fraud_rate=0 rows | `main.py:update_demo()`, `model.py:train()` | Health and model readiness pass | Independent test and CV | High |
-| 80/20 train/calibration split | COMPLETED | Random permutation | `model.py:train()` | 1,200 normal fit / 300 calibration | Out-of-time/seed-robust split | High |
+| Purchase category | COMPLETED | Subscription and coaching indicators | `features()` | 19 input dimensions; workout implicit as zeros | Complete explicit workout indicator | Low |
+| Normal-only VAE training | COMPLETED (synthetic) | Normal rows from earliest 70% period | `main.py:update_demo()`, `model.py:train()` | Health and model readiness pass | Independent real-data evaluation and CV | High |
+| Chronological train/calibration/test | COMPLETED (synthetic) | 70/15/15 chronological periods; normals fit/calibrate and later mixed period evaluated | `main.py:update_demo()`, `model.py:Detector.train()` | End-to-end tests and synthetic held-out metric run | Multi-seed and real-data validation | High |
 | Reconstruction loss | COMPLETED | Mean squared residual | `model.py:train()` | Source inspected | Weighted loss experiment | Low |
 | KL divergence | COMPLETED | Closed-form KL regularizer | `model.py:train()` | Source inspected | Annealing/sensitivity test | Medium |
 | Reparameterization | COMPLETED | epsilon-sampled latent during training | `VAE.forward()` | Source inspected | Monte-Carlo uncertainty scoring | Low |
 | Deterministic inference | COMPLETED | Uses latent mean, not random sampling | `VAE.forward()` | README/source consistent | Intentionally stochastic uncertainty mode | Low |
-| Checkpoint persistence | COMPLETED | Atomic save/load of weights/scaler/thresholds | `Detector.save/load()` | `vae.pt` loads and health ready | Checkpoint schema, hash and version | Medium |
+| Checkpoint persistence | COMPLETED | Atomic save/load with feature schema version 2 | `Detector.save/load()` | Old schema rejection tested | Hash/signature and registry versioning | Medium |
 | 95th/99th thresholds | COMPLETED | Held-out normal percentile calibration | `Detector.train()` | Source and API model info | Cost-based threshold tuning | Medium |
 | Low/medium/high classification | COMPLETED | Threshold comparator | `Detector.score()` | API and UI | Separate medium+high policy | Low |
 | Top-3 feature deviations | COMPLETED | Squared standardized residual ranking | `Detector.score()` | API detail test | Causal/explainable interpretation | Medium |

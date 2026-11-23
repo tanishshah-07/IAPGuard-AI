@@ -27,6 +27,8 @@ A full-stack **educational prototype** for the **Sports & Fitness Tech** domain.
 
 ## Run locally
 
+On Windows, open `start-backend.bat` and `start-frontend.bat` from the project root, or follow the manual steps below. In PowerShell, use `npm.cmd` if the execution policy blocks `npm.ps1`. You can also run `backend\.venv\Scripts\python.exe` directly to avoid activating the virtual environment.
+
 **Terminal 1 — Python API**
 
 ```bash
@@ -51,7 +53,7 @@ npm run dev
 
 Open **http://localhost:5173**. Vite proxies `/api` to the Python server.
 
-For a production build of the frontend only: `cd frontend && npm run build`. You must serve the API separately and set `VITE_API_URL` appropriately before building.
+To build the dashboard, run `npm run build` in `frontend`. Serve the build with a same-origin reverse proxy for `/api`, or set `VITE_API_URL` to the backend origin before building. For a separate frontend origin, set the backend process variable `IAPGUARD_CORS_ORIGINS` to the frontend origin (comma-separated for multiple origins).
 
 ## Backend tests
 

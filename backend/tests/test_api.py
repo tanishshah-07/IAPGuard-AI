@@ -1,6 +1,5 @@
 import os
 import tempfile
-from pathlib import Path
 
 os.environ['IAPGUARD_DATA_DIR'] = tempfile.mkdtemp(prefix='iapguard-test-')
 from fastapi.testclient import TestClient
@@ -28,3 +27,14 @@ def test_end_to_end():
         assert client.get('/api/evaluation').json()['available']
         assert client.get('/api/model').json()['ready']
         assert client.get('/api/transactions/DOES-NOT-EXIST').status_code==404
+
+        transaction_url = '/api/transactions/' + sample['id']
+        assert client.post('/api/model/retrain').json()['scored_transactions'] == 1200
+        detail = client.get(transaction_url).json()
+        assert detail['review']['note'] == 'test'
+        assert detail['transaction']['anomaly_score'] == detail['analysis']['anomaly_score']
+        assert client.post('/api/demo/reset').json()['count'] == 1200
+        assert client.get(transaction_url).json()['review'] is None
+    with TestClient(app) as client:
+        assert client.get('/api/health').json()['model_ready']
+        assert client.get('/api/overview').json()['total_transactions'] == 1200

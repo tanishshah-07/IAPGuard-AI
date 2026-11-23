@@ -1,8 +1,8 @@
 """IAPGuard AI FastAPI service. Demo-only: no auth or payment integration."""
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+import os
 from threading import Lock
-import sqlite3
 from typing import Literal
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,31 +30,29 @@ class ReviewInput(BaseModel):
     resolution: Literal['confirmed_fraud','legitimate','needs_review']
     note: str = Field(default='', max_length=500)
 
-def rescore_all():
-    with model_lock:
-        with connect() as db:
-            rows = db.execute('SELECT * FROM transactions').fetchall()
-            updates = []
-            for row in rows:
-                prediction = detector.score(dict(row))
-                updates.append((prediction['anomaly_score'],prediction['risk_level'],row['id']))
-            db.executemany('UPDATE transactions SET anomaly_score=?,risk_level=? WHERE id=?',updates)
+def rescore_all(db, model):
+    rows = db.execute('SELECT * FROM transactions').fetchall()
+    updates = []
+    for row in rows:
+        prediction = model.score(row)
+        updates.append((prediction['anomaly_score'], prediction['risk_level'], row['id']))
+    db.executemany('UPDATE transactions SET anomaly_score=?,risk_level=? WHERE id=?', updates)
     return len(updates)
 
-def seed_demo(reset=False):
-    with connect() as db:
-        count = db.execute('SELECT COUNT(*) FROM transactions').fetchone()[0]
-        if count and not reset:
-            return {'message':'Existing transactions preserved','count':count}
-        if reset:
-            db.execute('DELETE FROM reviews'); db.execute('DELETE FROM transactions')
-    # Training uses a separate, independently seeded normal-only sample.
-    # Evaluation uses a different synthetic sample containing labeled injected patterns.
+def update_demo(*, replace_transactions=False):
+    global detector
     with model_lock:
-        detector.train(generate(count=1500, fraud_rate=0, seed=101),epochs=24)
-    insert_many(generate(count=1200, fraud_rate=.12, seed=27))
-    scored = rescore_all()
-    return {'message':'Synthetic demo data seeded and VAE trained', 'count':scored}
+        candidate = Detector(load_existing=False)
+        info = candidate.train(generate(count=1500, fraud_rate=0, seed=101), epochs=24)
+        with connect() as db:
+            if replace_transactions:
+                db.execute('DELETE FROM reviews')
+                db.execute('DELETE FROM transactions')
+                insert_many(db, generate(count=1200, fraud_rate=.12, seed=27))
+            total = rescore_all(db, candidate)
+            candidate.save()
+        detector = candidate
+    return total, info
 
 @asynccontextmanager
 async def lifespan(app):
@@ -63,16 +61,20 @@ async def lifespan(app):
     detector = Detector()
     with connect() as db:
         count = db.execute('SELECT COUNT(*) FROM transactions').fetchone()[0]
-    if not count:
-        seed_demo()
-    elif not detector.ready:
-        with model_lock: detector.train(generate(count=1500,fraud_rate=0,seed=101),epochs=24)
-        rescore_all()
+    if not count or not detector.ready:
+        update_demo(replace_transactions=not count)
+    else:
+        # Repair scores left behind by an interrupted update or a prior version.
+        with connect() as db:
+            rescore_all(db, detector)
     yield
 
 app = FastAPI(title='IAPGuard AI',version='1.0.0',lifespan=lifespan,
               description='Unsupervised VAE anomaly detection on synthetic fitness in-app purchases.')
-app.add_middleware(CORSMiddleware, allow_origins=['http://localhost:5173','http://127.0.0.1:5173'],
+local_origins = ['http://localhost:5173', 'http://127.0.0.1:5173']
+extra_origins = [origin.strip().rstrip('/') for origin in
+                 os.getenv('IAPGUARD_CORS_ORIGINS', '').split(',') if origin.strip()]
+app.add_middleware(CORSMiddleware, allow_origins=[*local_origins, *extra_origins],
                    allow_credentials=False,allow_methods=['GET','POST'],allow_headers=['*'])
 
 @app.get('/api/health')
@@ -82,6 +84,7 @@ def health():
 @app.get('/api/overview')
 def overview():
     with connect() as db:
+        db.execute('BEGIN')
         total=db.execute('SELECT COUNT(*) FROM transactions').fetchone()[0]
         high=db.execute("SELECT COUNT(*) FROM transactions WHERE risk_level='high'").fetchone()[0]
         medium=db.execute("SELECT COUNT(*) FROM transactions WHERE risk_level='medium'").fetchone()[0]
@@ -108,6 +111,7 @@ def transactions(page:int=Query(1,ge=1),limit:int=Query(15,ge=1,le=100),
         params.extend([f'%{search}%',f'%{search}%'])
     clause='WHERE '+' AND '.join(where) if where else ''
     with connect() as db:
+        db.execute('BEGIN')
         total=db.execute(f'SELECT COUNT(*) FROM transactions {clause}',params).fetchone()[0]
         rows=db.execute(f'SELECT * FROM transactions {clause} ORDER BY timestamp DESC LIMIT ? OFFSET ?',
                         [*params,limit,(page-1)*limit]).fetchall()
@@ -115,11 +119,12 @@ def transactions(page:int=Query(1,ge=1),limit:int=Query(15,ge=1,le=100),
 
 @app.get('/api/transactions/{transaction_id}')
 def transaction_detail(transaction_id:str):
-    with connect() as db:
+    with model_lock, connect() as db:
+        db.execute('BEGIN')
         row=db.execute('SELECT * FROM transactions WHERE id=?',(transaction_id,)).fetchone()
+        if not row: raise HTTPException(404,'Transaction not found')
         review=db.execute('SELECT * FROM reviews WHERE transaction_id=?',(transaction_id,)).fetchone()
-    if not row: raise HTTPException(404,'Transaction not found')
-    with model_lock: prediction=detector.score(dict(row))
+        prediction=detector.score(row)
     return {'transaction':dict(row),'analysis':prediction,'review':row_to_dict(review)}
 
 @app.post('/api/analyze')
@@ -132,6 +137,7 @@ def analyze(payload:TransactionInput):
 @app.post('/api/transactions/{transaction_id}/review')
 def review_transaction(transaction_id:str,payload:ReviewInput):
     with connect() as db:
+        db.execute('BEGIN IMMEDIATE')
         row=db.execute('SELECT id FROM transactions WHERE id=?',(transaction_id,)).fetchone()
         if not row: raise HTTPException(404,'Transaction not found')
         now=datetime.now(timezone.utc).isoformat(timespec='seconds')
@@ -152,13 +158,13 @@ def model_info():
 
 @app.post('/api/model/retrain')
 def retrain():
-    with model_lock: info=detector.train(generate(count=1500,fraud_rate=0,seed=101),epochs=24)
-    total=rescore_all()
+    total, info = update_demo()
     return {'message':'Model retrained and transactions rescored','scored_transactions':total,'training':info}
 
 @app.post('/api/demo/reset')
 def reset_demo():
-    return seed_demo(reset=True)
+    total, _ = update_demo(replace_transactions=True)
+    return {'message':'Synthetic demo data seeded and VAE trained', 'count':total}
 
 @app.get('/api/evaluation')
 def evaluation():

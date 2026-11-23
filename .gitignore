@@ -6,3 +6,20 @@ dist/
 .env
 backend/data/
 *.pyc
+
+# Nested GitHub clone - do not upload
+IAPGuard-AI/
+
+# Local environment configuration
+.env.*
+!.env.example
+
+# Local databases and model checkpoints
+*.db
+*.sqlite
+*.sqlite3
+*.pt
+*.pth
+
+# Unnecessary backend npm lockfile
+backend/package-lock.json

@@ -1,0 +1,191 @@
+# Test and Audit Results
+
+**Audit date:** 2026-11-23  
+**Test scope:** Backend pytest, frontend production build, live API smoke checks, SQLite consistency, source/security scans.  
+**Browser testing:** NOT PERFORMED. UI behavior was inspected statically only.
+
+## Backend Test
+
+Command:
+
+```powershell
+cd D:\important\IAPGuard_AI_Download_2026_11_12\iapguard-ai\backend
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+Result:
+
+```text
+1 passed
+2 warnings
+```
+
+Warnings:
+
+1. FastAPI/Starlette test client deprecation notice involving `httpx2`.
+2. pytest could not write `backend/.pytest_cache` due to access denied.
+
+Test coverage:
+
+- Application startup and model readiness
+- Overview transaction count
+- High-risk transaction retrieval
+- Transaction detail and top deviations
+- Review save and reload
+- Stateless live analysis
+- Evaluation availability
+- Model readiness
+- Missing transaction 404
+- Retrain and transaction rescore
+- Reset and review deletion
+- Readiness across a second TestClient lifecycle
+
+**Status:** PARTIALLY COMPLETED. It is an integration smoke test, not full unit/model/security coverage.
+
+## Frontend Production Build
+
+Command:
+
+```powershell
+cd D:\important\IAPGuard_AI_Download_2026_11_12\iapguard-ai\frontend
+npm.cmd run build
+```
+
+Result:
+
+```text
+vite v6.4.6
+1993 modules transformed
+dist/index.html, CSS and JS generated
+build succeeded
+```
+
+Warning: the JavaScript bundle is 590.61 kB and exceeds Vite's 500 kB chunk warning threshold.
+
+**Status:** COMPLETED for build; NOT VERIFIED for browser behavior.
+
+## Live API Smoke Tests
+
+Backend command:
+
+```powershell
+cd D:\important\IAPGuard_AI_Download_2026_11_12\iapguard-ai\backend
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+Health check:
+
+```powershell
+curl.exe -sS http://127.0.0.1:8000/api/health
+```
+
+Observed:
+
+```json
+{"status":"ok","model_ready":true,"demo_mode":true}
+```
+
+Evaluation check:
+
+```powershell
+curl.exe -sS "http://127.0.0.1:8000/api/evaluation"
+```
+
+Observed synthetic metrics:
+
+```json
+{"available":true,"precision":0.9273,"recall":0.9871,"f1":0.9563,"false_positive_rate":0.0115,"confusion":{"tp":153,"fp":12,"tn":1033,"fn":2}}
+```
+
+These metrics apply only to seeded synthetic data and must not be presented as real production performance.
+
+## SQLite Data Consistency
+
+Observed persisted database:
+
+- Tables: `transactions`, `reviews`, indexes and SQLite primary-key indexes
+- Transaction rows: 1,200
+- Synthetic-fraud rows: 155
+- Null anomaly scores: 0
+- Duplicate transaction IDs: 0
+- High-risk: 165
+- Medium-risk: 35
+- Low-risk: 1,000
+- Review rows: 0
+
+The database contained repeated user IDs, but source inspection and SQL checks found no calculated rolling per-user history.
+
+## Security and Generated-File Checks
+
+- No embedded AWS key, private key or obvious hardcoded secret pattern was found.
+- `.env.example` contains variable names and no secret values.
+- `.gitignore` ignores virtualenv, node_modules, dist, SQLite data and environment files.
+- No authentication or authorization implementation exists.
+- No automated dependency vulnerability, SAST or secrets scan was run.
+- `backend/package-lock.json` is untracked and appears inconsistent with the Python backend structure.
+
+## Browser Verification
+
+**NOT VERIFIED / NOT IMPLEMENTED:** no browser automation or component test framework was available or configured.
+
+## Exact Reproduction Commands
+
+Backend tests:
+
+```powershell
+cd D:\important\IAPGuard_AI_Download_2026_11_12\iapguard-ai\backend
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+Frontend build:
+
+```powershell
+cd D:\important\IAPGuard_AI_Download_2026_11_12\iapguard-ai\frontend
+npm.cmd run build
+```
+
+Backend startup:
+
+```powershell
+cd D:\important\IAPGuard_AI_Download_2026_11_12\iapguard-ai\backend
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
+```
+
+Frontend startup:
+
+```powershell
+cd D:\important\IAPGuard_AI_Download_2026_11_12\iapguard-ai\frontend
+npm.cmd run dev
+```
+
+Health:
+
+```powershell
+curl.exe -sS http://127.0.0.1:8000/api/health
+```
+
+Evaluation:
+
+```powershell
+curl.exe -sS http://127.0.0.1:8000/api/evaluation
+```
+
+OpenAPI:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Persisted database inspection:
+
+```powershell
+cd D:\important\IAPGuard_AI_Download_2026_11_12\iapguard-ai\backend
+.\.venv\Scripts\python.exe -c "import sqlite3; c=sqlite3.connect('data/iapguard.sqlite3'); c.row_factory=sqlite3.Row; print(c.execute('SELECT COUNT(*) FROM transactions').fetchone()[0]); print([dict(r) for r in c.execute('SELECT risk_level,COUNT(*) n FROM transactions GROUP BY risk_level')])"
+```
+
+Synthetic confusion calculation:
+
+```powershell
+cd D:\important\IAPGuard_AI_Download_2026_11_12\iapguard-ai\backend
+.\.venv\Scripts\python.exe -c "import sqlite3; c=sqlite3.connect('data/iapguard.sqlite3'); rows=c.execute('SELECT risk_level,is_synthetic_fraud FROM transactions').fetchall(); tp=sum(r=='high' and y==1 for r,y in rows); fp=sum(r=='high' and y==0 for r,y in rows); fn=sum(r!='high' and y==1 for r,y in rows); tn=sum(r!='high' and y==0 for r,y in rows); p=tp/(tp+fp) if tp+fp else 0; rr=tp/(tp+fn) if tp+fn else 0; f=2*p*rr/(p+rr) if p+rr else 0; fpr=fp/(fp+tn) if fp+tn else 0; print({'precision':round(p,4),'recall':round(rr,4),'f1':round(f,4),'false_positive_rate':round(fpr,4),'confusion':{'tp':tp,'fp':fp,'tn':tn,'fn':fn}})"
+```

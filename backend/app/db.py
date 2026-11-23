@@ -13,6 +13,7 @@ def connect():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     try:
+        conn.execute('PRAGMA foreign_keys = ON')
         yield conn
         conn.commit()
     except Exception:
@@ -46,11 +47,9 @@ COLUMNS = ('id','user_id','timestamp','amount','hour','account_age_days','purcha
            'failed_attempts_24h','payment_methods_7d','device_changes_7d','country_mismatch',
            'purchase_type','anomaly_score','risk_level','status','is_synthetic_fraud','source')
 
-def insert_many(records):
-    if not records: return
+def insert_many(db, records):
     query = f"INSERT INTO transactions ({','.join(COLUMNS)}) VALUES ({','.join(['?']*len(COLUMNS))})"
-    with connect() as db:
-        db.executemany(query, [tuple(rec.get(k) for k in COLUMNS) for rec in records])
+    db.executemany(query, [tuple(rec.get(k) for k in COLUMNS) for rec in records])
 
 def row_to_dict(row):
     return dict(row) if row is not None else None

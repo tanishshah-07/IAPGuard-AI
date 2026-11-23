@@ -2,8 +2,8 @@
 
 Security/interpretability note: VAE reconstruction error signals atypicality, not proof of fraud.
 """
-import json
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 import numpy as np
 import torch
 from torch import nn
@@ -42,13 +42,14 @@ class VAE(nn.Module):
         return self.decoder(z), mu, logvar
 
 class Detector:
-    def __init__(self):
+    def __init__(self, *, load_existing=True):
         self.network = VAE()
         self.scaler = StandardScaler()
         self.thresholds = None
         self.training_info = {}
         self.model_file = DATA_DIR / 'vae.pt'
-        self.load()
+        if load_existing:
+            self.load()
 
     @property
     def ready(self): return self.thresholds is not None
@@ -61,7 +62,7 @@ class Detector:
         matrix = np.stack([features(x) for x in normal_transactions])
         generator = np.random.default_rng(seed)
         indices = generator.permutation(len(matrix))
-        split = max(100, int(len(matrix)*0.8))
+        split = int(len(matrix)*0.8)
         fit_data, calibration = matrix[indices[:split]], matrix[indices[split:]]
         # Do not fit standardization on calibration records.
         self.scaler = StandardScaler().fit(fit_data)
@@ -87,7 +88,6 @@ class Detector:
                               'epochs':epochs, 'features':FEATURE_NAMES,
                               'threshold_strategy':'95th and 99th percentiles of held-out normal data',
                               'seed':seed}
-        self.save()
         return self.training_info
 
     def raw_scores(self, feature_matrix):
@@ -99,12 +99,14 @@ class Detector:
 
     def score(self, tx):
         if not self.ready: raise RuntimeError('Detector must be trained first')
-        score = float(self.raw_scores(np.array([features(tx)]))[0])
-        risk = 'high' if score >= self.thresholds['high'] else ('medium' if score >= self.thresholds['medium'] else 'low')
         # Feature-level residuals are indicative, not causal explanations.
         input_data = torch.tensor(self.scaler.transform(features(tx).reshape(1,-1)), dtype=torch.float32)
-        with torch.no_grad(): reconstructed, _, _ = self.network(input_data)
-        residual = ((reconstructed-input_data).square().squeeze().numpy())
+        with torch.no_grad():
+            reconstructed, _, _ = self.network(input_data)
+            errors = (reconstructed-input_data).square()
+            score = errors.mean(dim=1).item()
+            residual = errors[0].numpy()
+        risk = 'high' if score >= self.thresholds['high'] else ('medium' if score >= self.thresholds['medium'] else 'low')
         ranked = sorted(zip(FEATURE_NAMES, residual), key=lambda x:x[1], reverse=True)
         return {'anomaly_score':round(score,5), 'risk_level':risk,
                 'top_deviations':[{'feature':name,'contribution':round(float(value),4)} for name,value in ranked[:3]],
@@ -112,10 +114,18 @@ class Detector:
 
     def save(self):
         DATA_DIR.mkdir(parents=True,exist_ok=True)
-        torch.save({'weights':self.network.state_dict(),'mean':torch.tensor(self.scaler.mean_ ),
-                    'scale':torch.tensor(self.scaler.scale_),'var':torch.tensor(self.scaler.var_),
-                    'n_samples_seen':int(self.scaler.n_samples_seen_),
-                    'thresholds':self.thresholds,'training_info':self.training_info},self.model_file)
+        with NamedTemporaryFile(dir=DATA_DIR, delete=False) as checkpoint:
+            temporary_path = Path(checkpoint.name)
+            try:
+                torch.save({'weights':self.network.state_dict(),'mean':torch.tensor(self.scaler.mean_),
+                            'scale':torch.tensor(self.scaler.scale_),'var':torch.tensor(self.scaler.var_),
+                            'n_samples_seen':int(self.scaler.n_samples_seen_),
+                            'thresholds':self.thresholds,'training_info':self.training_info},checkpoint)
+                checkpoint.close()
+                temporary_path.replace(self.model_file)
+            finally:
+                checkpoint.close()
+                temporary_path.unlink(missing_ok=True)
 
     def load(self):
         if not self.model_file.exists(): return

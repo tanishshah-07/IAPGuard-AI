@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta, timezone
+import sqlite3
 import numpy as np
 from app.model import FEATURE_NAMES, Detector, feature_matrix, features
+from app.main import chronological_partitions, rescore_all
 from app.synthetic import generate
 
 BASE=datetime(2025,1,1,tzinfo=timezone.utc)
@@ -52,17 +54,70 @@ def test_feature_matrix_is_chronological_and_labels_are_not_features():
     flipped=[dict(row,is_synthetic_fraud=1-row['is_synthetic_fraud']) for row in rows]
     assert np.array_equal(matrix,feature_matrix(flipped))
 
-def test_training_uses_chronological_normal_partitions_and_api_feature_parity(tmp_path):
+def test_training_uses_normal_fit_and_calibration_rows_and_api_feature_parity(monkeypatch):
     train=[tx(f't{i}',i*60,amount=100+i%5) for i in range(120)]
-    calibration=[tx(f'c{i}',(120+i)*60,amount=101+i%5,label=int(i%7==0)) for i in range(35)]
-    detector=Detector(load_existing=False); info=detector.train(train,calibration,epochs=1)
+    train.append(tx('train-fraud',120*60,label=1))
+    calibration=[tx(f'c{i}',(121+i)*60,amount=101+i%5,label=int(i%7==0)) for i in range(35)]
+    expected_fit=feature_matrix(train)[:120]
+    expected_calibration=feature_matrix(calibration,history=train)[
+        [i for i,row in enumerate(calibration) if not row['is_synthetic_fraud']]]
+    detector=Detector(load_existing=False)
+    calibration_score_inputs=[]; original_raw_scores=detector.raw_scores
+    def capture_calibration(matrix):
+        calibration_score_inputs.append(matrix.copy())
+        return original_raw_scores(matrix)
+    monkeypatch.setattr(detector,'raw_scores',capture_calibration)
+    info=detector.train(train,calibration,epochs=1)
     assert info['normal_training_records']==120
     assert info['calibration_records']==30
+    assert detector.scaler.n_samples_seen_==120
+    assert np.allclose(detector.scaler.mean_,expected_fit.mean(axis=0))
+    assert len(calibration_score_inputs)==1
+    assert np.array_equal(calibration_score_inputs[0],expected_calibration)
     assert info['split_strategy']=='chronological train/calibration/test periods'
     target=tx('api',1000*60,amount=250)
     history=train+calibration
     expected=feature_matrix([target],history)[0]
     assert np.array_equal(expected,features(target,history))
+
+def test_production_partitioner_assigns_chronological_70_15_15():
+    records=generate(count=1200,fraud_rate=.12,seed=81)
+    training,calibration,testing=chronological_partitions(records)
+    assert (len(training),len(calibration),len(testing))==(840,180,180)
+    key=lambda row:(datetime.fromisoformat(row['timestamp']),row['id'])
+    assert training==sorted(training,key=key)
+    assert calibration==sorted(calibration,key=key)
+    assert testing==sorted(testing,key=key)
+    assert key(training[-1])<key(calibration[0])<key(testing[0])
+
+def test_stored_rescoring_replays_history_chronologically_without_future_leakage():
+    rows=[tx('late',180,user='U1'),tx('first',60,user='U1'),
+          tx('other',120,user='U2'),tx('middle',120,user='U1')]
+    conn=sqlite3.connect(':memory:'); conn.row_factory=sqlite3.Row
+    conn.execute('''CREATE TABLE transactions (
+        id TEXT,user_id TEXT,timestamp TEXT,amount REAL,hour INTEGER,account_age_days INTEGER,
+        purchases_24h INTEGER,failed_attempts_24h INTEGER,payment_methods_7d INTEGER,
+        device_changes_7d INTEGER,country_mismatch INTEGER,purchase_type TEXT,
+        anomaly_score REAL,risk_level TEXT)''')
+    conn.executemany('''INSERT INTO transactions VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',[
+        (r['id'],r['user_id'],r['timestamp'],r['amount'],r['hour'],r['account_age_days'],
+         r['purchases_24h'],r['failed_attempts_24h'],r['payment_methods_7d'],
+         r['device_changes_7d'],r['country_mismatch'],r['purchase_type'],None,'unscored') for r in rows])
+    scored=[]
+    class SpyDetector:
+        def score(self,target,history):
+            vector=features(target,history)
+            scored.append((target['id'],float(vector[FEATURE_NAMES.index('log_prior_transaction_count')])))
+            return {'anomaly_score':1.0,'risk_level':'low'}
+    try:
+        assert rescore_all(conn,SpyDetector())==4
+        assert [item[0] for item in scored]==['first','middle','other','late']
+        assert dict(scored)['first']==0
+        assert np.isclose(dict(scored)['middle'],np.log1p(1))
+        assert np.isclose(dict(scored)['late'],np.log1p(2))
+        assert conn.execute("SELECT anomaly_score FROM transactions WHERE id='late'").fetchone()[0]==1
+    finally:
+        conn.close()
 
 def test_old_checkpoint_is_explicitly_rejected(tmp_path):
     import torch

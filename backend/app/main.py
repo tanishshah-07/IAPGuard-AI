@@ -41,14 +41,17 @@ def rescore_all(db, model):
     db.executemany('UPDATE transactions SET anomaly_score=?,risk_level=? WHERE id=?', updates)
     return len(updates)
 
+def chronological_partitions(records):
+    ordered = sorted(records, key=lambda row:(as_utc(row['timestamp']),str(row.get('id',''))))
+    train_end=int(len(ordered)*.70); calibration_end=int(len(ordered)*.85)
+    return ordered[:train_end], ordered[train_end:calibration_end], ordered[calibration_end:]
+
 def update_demo(*, replace_transactions=False):
     global detector
     with model_lock:
         candidate = Detector(load_existing=False)
         records = generate(count=1200, fraud_rate=.12, seed=27)
-        train_end=int(len(records)*.70); calibration_end=int(len(records)*.85)
-        training=records[:train_end]; calibration=records[train_end:calibration_end]
-        testing=records[calibration_end:]
+        training, calibration, testing = chronological_partitions(records)
         for row in training: row['evaluation_partition']='train'
         for row in calibration: row['evaluation_partition']='calibration'
         for row in testing: row['evaluation_partition']='test'
@@ -144,8 +147,10 @@ def analyze(payload:TransactionInput):
     timestamp=as_utc(timestamp).isoformat(timespec='seconds')
     tx['timestamp']=timestamp
     with model_lock, connect() as db:
-        history=[dict(row) for row in db.execute(
+        user_rows=[dict(row) for row in db.execute(
             'SELECT * FROM transactions WHERE user_id=?',(tx['user_id'],)).fetchall()]
+        target_time=as_utc(timestamp)
+        history=[row for row in user_rows if as_utc(row['timestamp']) < target_time]
         prediction=detector.score(tx,history)
     return {'analysis':prediction,'transaction':tx,'saved':False,
             'notice':'Scoring does not charge a payment or save the transaction.'}

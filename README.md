@@ -17,7 +17,7 @@ A full-stack **educational prototype** for the **Sports & Fitness Tech** domain.
 - Retrain VAE / reset data via UI; persisted model weights in `backend/data/vae.pt`
 - OpenAPI reference at `/docs`; backend API integration test
 
-The stateless `/api/analyze` endpoint accepts an optional ISO timestamp (defaults to current UTC), looks up earlier stored transactions for the supplied user ID, and does not save the submitted transaction. The legacy `purchases_24h` request field remains accepted but is not used as a model input. Checkpoints use feature schema version 2; older incompatible checkpoints are retrained during startup. Existing SQLite files are migrated additively with an evaluation-partition column and a user-history index.
+`POST /api/analyze` is only for a new, unsaved Lab submission. Its request schema has no target transaction ID; it looks up stored rows for the supplied user and the shared feature builder uses only rows earlier than the optional ISO timestamp (current UTC when omitted). The response retains `saved: false`; the submitted transaction is never inserted. Stored transaction rescoring and detail scoring pass the transaction ID so a stored target is excluded from its own history. The legacy `purchases_24h` request field remains accepted but is not a model input. Checkpoints use feature schema version 2; incompatible feature schemas are rejected and startup retrains. Existing SQLite files are migrated additively with an evaluation-partition column and user-history index.
 
 Per-user history is a prototype behavior only: `user_id` is client-supplied and there is no authentication or tenant isolation. All model metrics remain synthetic and are not evidence of real fraud performance.
 
@@ -76,8 +76,8 @@ Fitness app transaction or simulated demo event
                 |
        FastAPI REST endpoints
                 |
-   feature conversion and scaling
-    (11 engineered input dimensions)
+   shared point-in-time feature builder
+    (19 engineered input dimensions)
                 |
   PyTorch VAE encoder -> latent z -> decoder
                 |
@@ -91,20 +91,13 @@ Fitness app transaction or simulated demo event
        React overview, alerts, review
 ```
 
-During training, random mini-batch sampling and a KL loss term regularize the VAE. At inference the model uses `z = mu` instead of random sampling to make scores deterministic. The scaler is fit only on the normal training split. Thresholds are calibrated on a held-out normal split (not the dashboard evaluation records).
+During training, random mini-batch sampling and a KL loss term regularize the VAE. At inference the model uses `z = mu` instead of random sampling to make scores deterministic. The scaler is fit only on normal rows in the earliest chronological 70% training period. Thresholds are calibrated on normal rows in the next 15%; the final 15% mixed period is used only for synthetic evaluation.
 
 ### VAE features
 
-- Log purchase amount
-- Sine and cosine hour of day
-- Log account age in days
-- Log purchase count over 24 hours
-- Failed payment attempts over 24 hours
-- Distinct payment methods over seven days
-- Device changes over seven days
-- Billing country mismatch
-- Subscription category indicator
-- Coaching category indicator
+The ordered 19 inputs are: `log_amount`, `hour_sin`, `hour_cos`, `log_account_age`, `failed_attempts_24h`, `payment_methods_7d`, `device_changes_7d`, `country_mismatch`, `is_subscription`, `is_coaching`, `log_prior_transaction_count`, `log_historical_average_amount`, `log_historical_amount_std`, `relative_amount_deviation`, `log_seconds_since_previous`, `log_prior_count_1h`, `log_prior_count_24h`, `log_prior_count_7d`, and `category_differs_from_history`.
+
+`features()` is the shared point-in-time builder used by training, calibration, stored-row rescoring, detail scoring, and live analysis. It uses same-user rows strictly earlier than the target timestamp; equal timestamps and future rows are excluded. Historical purchase counts use inclusive lower and exclusive upper time boundaries. Amount standard deviation is population SD (`ddof=0`); cold-start and zero-mean relative deviation default to zero. Historical category ties are resolved lexically. The external legacy `purchases_24h` value remains accepted for compatibility but is not modeled.
 
 ### Scoring and evaluation
 
@@ -118,7 +111,7 @@ A higher reconstruction error indicates that the purchase differs more from synt
 | GET | `/api/overview` | KPI, trend and recent transactions |
 | GET | `/api/transactions?page=1&risk=all&search=` | Paginated list |
 | GET | `/api/transactions/{id}` | Details, reconstruction deviations, prior review |
-| POST | `/api/analyze` | Score manually supplied features; does not persist |
+| POST | `/api/analyze` | Score a new, unsaved Lab submission using earlier same-user history; does not persist |
 | POST | `/api/transactions/{id}/review` | Record review outcome and note |
 | GET | `/api/model` | Architecture feature list + calibration thresholds |
 | POST | `/api/model/retrain` | Retrain on synthetic normals and rescore saved dataset |

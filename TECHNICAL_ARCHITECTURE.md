@@ -127,6 +127,8 @@ All routes are in `backend/app/main.py`:
 
 OpenAPI documentation is available at `/docs`.
 
+`POST /api/analyze` is reserved for a new, unsaved Lab submission. Its request schema has no target transaction ID; it queries that user's stored records, filters them to UTC timestamps strictly earlier than the submitted timestamp, and returns `saved:false` without inserting the submission. Stored transaction rescoring and detail scoring pass the stored ID to the same feature builder, which excludes that target row from its own history.
+
 ## Frontend Architecture
 
 - Entry: `frontend/src/main.jsx`

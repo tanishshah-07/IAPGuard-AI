@@ -1,7 +1,10 @@
 # Test and Audit Results
 
-**Audit date:** 2026-11-23  
-**Test scope:** Backend pytest, frontend production build, live API smoke checks, SQLite consistency, source/security scans.  
+**Validation date:** 2026-11-24
+
+**Checks run on 2026-11-24:** Backend pytest and frontend production build. Backend result: 11 passed, 1 warning; frontend build succeeded.
+
+**Historical checks:** The live API smoke, SQLite consistency, and source/security observations below are from earlier audit snapshots; they were not rerun on 2026-11-24.
 **Browser testing:** NOT PERFORMED. UI behavior was inspected statically only.
 
 ## Backend Test
@@ -9,14 +12,14 @@
 Command:
 
 ```powershell
-cd D:\important\IAPGuard_AI_Download_2026_11_12\iapguard-ai\backend
-.\.venv\Scripts\python.exe -m pytest -q
+cd D:\important\IAPGuard_AI_Download_2026_11_12\iapguard-ai
+.\backend\.venv\Scripts\python.exe -m pytest backend/tests -q
 ```
 
 Result:
 
 ```text
-9 passed
+11 passed
 1 warning
 ```
 
@@ -42,8 +45,12 @@ Test coverage:
 - Equal-time exclusion, future/self exclusion, and chronological feature order
 - Label-independent features, training/API feature parity, and old checkpoint rejection
 - Backward-compatible SQLite migration and API response fields
+- `/api/analyze` history lookup restricted to earlier rows for the requested user, ignores target IDs outside its schema, returns `saved:false`, and does not add a transaction
+- Production 70/15/15 partition sizes and ordering
+- Scaler sample count equals normal training rows; threshold score input contains only normal calibration rows
+- Stored rescoring runs in chronological order and later records see only earlier same-user history
 
-**Status:** PARTIALLY COMPLETED. It is an integration smoke test, not full unit/model/security coverage.
+**Status:** PARTIALLY COMPLETED. Tests cover targeted behavior, API, partition, replay and migration paths, not full malformed-data, security or concurrency coverage.
 
 ## Frontend Production Build
 
@@ -67,7 +74,7 @@ Warning: the JavaScript bundle is 590.61 kB and exceeds Vite's 500 kB chunk warn
 
 **Status:** COMPLETED for build; NOT VERIFIED for browser behavior.
 
-## Live API Smoke Tests
+## Historical Live API Smoke Snapshot (not rerun 2026-11-24)
 
 Backend command:
 
@@ -112,7 +119,7 @@ The current pipeline reports metrics only for the later 15% test period (180 rec
 
 This is synthetic-data evaluation only. The legacy result used all rows and is not an apples-to-apples baseline. Neither result demonstrates real fraud-detection performance.
 
-## SQLite Data Consistency
+## Historical SQLite Data Consistency Snapshot (not rerun 2026-11-24)
 
 Observed persisted database:
 
@@ -124,9 +131,9 @@ Observed persisted database:
 - Scored risk bands in one seeded validation run: 70 high, 32 medium, 1,098 low
 - Review rows: 0
 
-The database contained repeated user IDs, but source inspection and SQL checks found no calculated rolling per-user history.
+Behavioral features are derived at scoring time from raw transaction history; they are not stored as redundant columns. This snapshot reflects one seeded validation run.
 
-## Security and Generated-File Checks
+## Historical Security and Generated-File Snapshot (not rerun 2026-11-24)
 
 - No embedded AWS key, private key or obvious hardcoded secret pattern was found.
 - `.env.example` contains variable names and no secret values.
